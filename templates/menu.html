@@ -1031,33 +1031,11 @@
 <body>
 
 <script>
-    const RESTAURANT_ID = {
-    {
-        restaurant.id
-    }
-    }
-
-    const TABLE_ID = {
-    {
-        table.id
-    }
-    }
-
+    const RESTAURANT_ID = {{ restaurant.id }}
+    const TABLE_ID = {{ table.id }}
     const LANG = "{{ lang or '' }}";
-    const CATEGORIES = {
-    {
-        categories_json | safe
-    }
-    }
-
-    const DISHES = {
-    {
-        dishes_json | safe
-    }
-    }
-
-
-
+    const CATEGORIES = {{ categories_json | safe }}
+    const DISHES = {{ dishes_json | safe }}
 
 
     const CAT_META = {
