@@ -538,6 +538,11 @@ async def health_check():
     return {"status": "ok"}
 
 
+@app.head("/health")
+async def health_check():
+    return {"status": "ok"}
+
+
 @app.get("/admin/qr/{restaurant_id}/{table_id}")
 async def generate_qr(restaurant_id: int, table_id: int, request: Request):
     import qrcode, io
