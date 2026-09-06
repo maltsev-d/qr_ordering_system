@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ lang or 'en' }}" {% if lang== 'ar' %}dir="rtl"{% endif %}>
+<html lang="{{ lang or 'en' }}" {% if lang=='ar' %}dir="rtl" {% endif %}>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
@@ -1056,6 +1056,7 @@
         dishes_json | safe
     }
     }
+
 
 
     const CAT_META = {
