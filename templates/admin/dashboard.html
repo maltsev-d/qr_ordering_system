@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="lo">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ໜ້າຫຼັກ · Sabaidee Kitchen</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --primary: #FF7A30;
+            --teal: #4ECDC4;
+            --success: #2D9B6B;
+            --accent: #FFB020;
+            --bg: #F5F3EE;
+            --surface: #FFFFFF;
+            --border: #EDE8E0;
+            --text: #1A1A1A;
+            --muted: #999999;
+            --nav: #1A1A2E;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── Nav ── */
+        .nav {
+            background: var(--nav);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-brand {
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            padding: 14px 0;
+            margin-right: 24px;
+            white-space: nowrap;
+        }
+
+        .nav-tabs {
+            display: flex;
+            flex: 1;
+        }
+
+        .nav-tab {
+            padding: 14px 16px;
+            font-size: 11px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.45);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            text-decoration: none;
+            white-space: nowrap;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1px;
+        }
+
+        .nav-tab .lo {
+            font-size: 11px;
+        }
+
+        .nav-tab .en {
+            font-size: 8px;
+            opacity: 0.5;
+        }
+
+        .nav-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .nav-right {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 10px;
+            margin-left: auto;
+            padding-left: 16px;
+            white-space: nowrap;
+        }
+
+        /* ── Body ── */
+        .body {
+            flex: 1;
+            padding: 20px;
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* ── Stats ── */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+        }
+
+        .stat-n {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1.1;
+        }
+
+        .stat-lo {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text);
+            margin-top: 4px;
+            line-height: 1.3;
+        }
+
+        .stat-en {
+            font-size: 9px;
+            color: var(--muted);
+        }
+
+        /* ── Section title ── */
+        .sec-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sec-title .sub {
+            font-size: 10px;
+            color: var(--muted);
+            font-weight: 400;
+        }
+
+        .sec-title .badge-count {
+            background: var(--primary);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 10px;
+        }
+
+        /* ── Waiter calls ── */
+        .waiter-section {
+            margin-bottom: 24px;
+        }
+
+        .call-card {
+            background: var(--surface);
+            border: 1.5px solid var(--teal);
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: pulse-border 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-border {
+            0%, 100% {
+                border-color: var(--teal);
+            }
+            50% {
+                border-color: #2BADA4;
+                box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.15);
+            }
+        }
+
+        .call-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .call-bell {
+            font-size: 22px;
+        }
+
+        .call-table {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .call-time {
+            font-size: 10px;
+            color: var(--muted);
+            margin-top: 1px;
+        }
+
+        .answer-btn {
+            background: var(--teal);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 11px;
+            font-weight: 700;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .answer-btn:hover {
+            background: #3db8b0;
+        }
+
+        .no-calls {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        /* ── Order cards ── */
+        .orders-section {
+            margin-bottom: 24px;
+        }
+
+        .order-card {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 10px;
+            transition: border-color .2s;
+        }
+
+        .order-card.status-new {
+            border-color: var(--primary);
+            background: #FFF8F5;
+        }
+
+        .order-card.status-accepted {
+            border-color: var(--accent);
+        }
+
+        .order-card.status-ready {
+            border-color: var(--teal);
+        }
+
+        .oc-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .oc-num {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.2;
+        }
+
+        .oc-num-sub {
+            font-size: 10px;
+            color: var(--muted);
+            font-weight: 400;
+        }
+
+        .badge {
+            font-size: 10px;
+            padding: 4px 9px;
+            border-radius: 8px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .b-new {
+            background: #FFF0E8;
+            color: var(--primary);
+        }
+
+        .b-accepted {
+            background: #FFF8E0;
+            color: #CC8800;
+        }
+
+        .b-ready {
+            background: #E0F7F5;
+            color: #2BADA4;
+        }
+
+        .b-done {
+            background: #E8F5EE;
+            color: var(--success);
+        }
+
+        .oc-items {
+            font-size: 11px;
+            color: #555;
+            line-height: 1.7;
+            padding: 8px 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .oc-foot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .oc-meta {
+            font-size: 10px;
+            color: var(--muted);
+        }
+
+        .oc-meta b {
+            color: #555;
+            font-weight: 600;
+        }
+
+        .oc-total {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .oc-btns {
+            display: flex;
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .btn-accept {
+            flex: 1;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 9px 6px;
+            font-size: 10px;
+            font-weight: 700;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+        }
+
+        .btn-ready {
+            flex: 1;
+            background: var(--teal);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 9px 6px;
+            font-size: 10px;
+            font-weight: 700;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+        }
+
+        .btn-done {
+            flex: 1;
+            background: var(--success);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 9px 6px;
+            font-size: 10px;
+            font-weight: 700;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+        }
+
+        .btn-cancel {
+            background: var(--bg);
+            color: var(--muted);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 9px 12px;
+            font-size: 10px;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+        }
+
+        /* ── Poll indicator ── */
+        .poll-indicator {
+            position: fixed;
+            bottom: 16px;
+            right: 16px;
+            background: var(--nav);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 10px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .poll-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--teal);
+            border-radius: 50%;
+            animation: blink 2s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.2;
+            }
+        }
+
+        /* ── Empty state ── */
+        .empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--muted);
+        }
+
+        .empty-emoji {
+            font-size: 40px;
+            margin-bottom: 12px;
+        }
+
+        .empty-text {
+            font-size: 13px;
+        }
+
+        /* ── Toast ── */
+        .toast {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            background: var(--text);
+            color: #fff;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 10px 16px;
+            border-radius: 10px;
+            z-index: 200;
+            display: none;
+        }
+
+        .toast.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="nav">
+    <div class="nav-brand">🐘 Sabaidee</div>
+    <div class="nav-tabs">
+        <a href="/admin/dashboard" class="nav-tab active">
+            <span class="lo">ໜ້າຫຼັກ</span>
+            <span class="en">Dashboard</span>
+        </a>
+        <a href="/admin/menu" class="nav-tab">
+            <span class="lo">ເມນູ</span>
+            <span class="en">Menu</span>
+        </a>
+        <a href="/admin/analytics" class="nav-tab">
+            <span class="lo">ສະຖິຕິ</span>
+            <span class="en">Analytics</span>
+        </a>
+    </div>
+    <div class="nav-right" id="last-update">–</div>
+</nav>
+
+<!-- Body -->
+<div class="body">
+
+    <!-- Stats -->
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-n" id="stat-orders">–</div>
+            <div class="stat-lo">ຄໍາສັ່ງ ມື້ນີ້</div>
+            <div class="stat-en">Orders today</div>
+        </div>
+        <div class="stat">
+            <div class="stat-n" id="stat-revenue">–</div>
+            <div class="stat-lo">ລາຍຮັບ</div>
+            <div class="stat-en">Revenue today</div>
+        </div>
+        <div class="stat">
+            <div class="stat-n" id="stat-avg">–</div>
+            <div class="stat-lo">ສະເລ່ຍ</div>
+            <div class="stat-en">Avg check</div>
+        </div>
+    </div>
+
+    <!-- Waiter calls -->
+    <div class="waiter-section">
+        <div class="sec-title">
+            🔔 ຄໍາຮ້ອງຂໍ <span class="sub">· Waiter calls</span>
+            <span class="badge-count" id="calls-count" style="display:none">0</span>
+        </div>
+        <div id="calls-list">
+            <div class="no-calls">ບໍ່ມີການຮ້ອງຂໍ · No calls right now</div>
+        </div>
+    </div>
+
+    <!-- Live orders -->
+    <div class="orders-section">
+        <div class="sec-title">
+            ຄໍາສັ່ງລ່າສຸດ <span class="sub">· Live orders</span>
+            <span class="badge-count" id="active-count" style="display:none">0</span>
+        </div>
+        <div id="orders-list">
+            <div class="empty">
+                <div class="empty-emoji">🍽️</div>
+                <div class="empty-text">ກໍາລັງໂຫລດ · Loading...</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Poll indicator -->
+<div class="poll-indicator">
+    <div class="poll-dot"></div>
+    Live
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+    const RESTAURANT_ID = {
+    {
+        restaurant.id
+    }
+    }
+
+
+    function formatPrice(val) {
+        return Number(val).toLocaleString() + ' ₭';
+    }
+
+    function timeAgo(dateStr) {
+        const diff = Math.floor((Date.now() - new Date(dateStr + 'Z')) / 1000);
+        if (diff < 60) return 'just now';
+        if (diff < 3600) return Math.floor(diff / 60) + ' min ago';
+        return Math.floor(diff / 3600) + 'h ago';
+    }
+
+    function showToast(msg, duration = 3000) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), duration);
+    }
+
+    function statusBadge(status) {
+        const map = {
+            new: ['🆕 ໃໝ່', 'b-new'],
+            accepted: ['⏳ ກໍາລັງປຸງ', 'b-accepted'],
+            ready: ['✅ ພ້ອມແລ້ວ', 'b-ready'],
+            done: ['✔ ສໍາເລັດ', 'b-done'],
+        };
+        const [label, cls] = map[status] || ['–', ''];
+        return `<span class="badge ${cls}">${label}</span>`;
+    }
+
+    function orderTypeLabel(type) {
+        return type === 'dine_in'
+            ? '<b>ກິນຢູ່ຮ້ານ</b> · Dine-in'
+            : '<b>ຊື້ກັບ</b> · Takeaway';
+    }
+
+    function nextStatusBtn(status, orderId) {
+        if (status === 'new') return `
+        <button class="btn-accept" onclick="updateStatus(${orderId}, 'accepted')">✅ ຮັບຄໍາສັ່ງ · Accept</button>
+        <button class="btn-cancel" onclick="cancelOrder(${orderId})">✕</button>
+      `;
+        if (status === 'accepted') return `
+        <button class="btn-ready" onclick="updateStatus(${orderId}, 'ready')">🍽️ ອາຫານພ້ອມ · Ready</button>
+        <button class="btn-cancel" onclick="cancelOrder(${orderId})">✕</button>
+      `;
+        if (status === 'ready') return `
+        <button class="btn-done" onclick="updateStatus(${orderId}, 'done')">✔ ສໍາເລັດ · Done</button>
+      `;
+        return '';
+    }
+
+    function renderOrders(orders) {
+        const list = document.getElementById('orders-list');
+        const activeOrders = orders.filter(o => o.status !== 'done');
+
+        const countEl = document.getElementById('active-count');
+        if (activeOrders.length > 0) {
+            countEl.textContent = activeOrders.length;
+            countEl.style.display = 'inline';
+        } else {
+            countEl.style.display = 'none';
+        }
+
+        if (!orders.length) {
+            list.innerHTML = `<div class="empty"><div class="empty-emoji">🍽️</div><div class="empty-text">ບໍ່ມີຄໍາສັ່ງ · No orders yet</div></div>`;
+            return;
+        }
+
+        list.innerHTML = orders.map(o => {
+            const items = o.items.map(i =>
+                `${i.dish_name}${i.mod ? ' (' + i.mod + ')' : ''} × ${i.qty}`
+            ).join(' &nbsp;·&nbsp; ');
+
+            const btns = nextStatusBtn(o.status, o.id);
+
+            return `
+          <div class="order-card status-${o.status}" id="order-${o.id}">
+            <div class="oc-top">
+              <div>
+                <div class="oc-num">#${String(o.id).padStart(3, '0')} · ໂຕະ ${o.table_number}</div>
+                <div class="oc-num-sub">Table ${o.table_number} · ${timeAgo(o.created_at)}</div>
+              </div>
+              ${statusBadge(o.status)}
+            </div>
+            <div class="oc-items">${items}</div>
+            <div class="oc-foot">
+              <div class="oc-meta">${orderTypeLabel(o.order_type)}</div>
+              <div class="oc-total">${formatPrice(o.total)}</div>
+            </div>
+            ${btns ? `<div class="oc-btns">${btns}</div>` : ''}
+          </div>
+        `;
+        }).join('');
+    }
+
+    function renderCalls(calls) {
+        const list = document.getElementById('calls-list');
+        const countEl = document.getElementById('calls-count');
+
+        if (calls.length > 0) {
+            countEl.textContent = calls.length;
+            countEl.style.display = 'inline';
+        } else {
+            countEl.style.display = 'none';
+        }
+
+        if (!calls.length) {
+            list.innerHTML = `<div class="no-calls">ບໍ່ມີການຮ້ອງຂໍ · No calls right now</div>`;
+            return;
+        }
+
+        list.innerHTML = calls.map(c => `
+        <div class="call-card" id="call-${c.id}">
+          <div class="call-left">
+            <div class="call-bell">🔔</div>
+            <div>
+              <div class="call-table">ໂຕະ ${c.table_number} ກໍາລັງໂທ · Table ${c.table_number}</div>
+              <div class="call-time">${timeAgo(c.called_at)}</div>
+            </div>
+          </div>
+          <button class="answer-btn" onclick="answerCall(${c.id})">✓ ໄປແລ້ວ · On my way</button>
+        </div>
+      `).join('');
+    }
+
+    function updateStats(orders) {
+        const today = new Date().toDateString();
+        const todayOrders = orders.filter(o => new Date(o.created_at + 'Z').toDateString() === today);
+        const revenue = todayOrders.reduce((s, o) => s + o.total, 0);
+        const avg = todayOrders.length ? Math.round(revenue / todayOrders.length) : 0;
+
+        document.getElementById('stat-orders').textContent = todayOrders.length;
+        document.getElementById('stat-revenue').textContent = formatPrice(revenue);
+        document.getElementById('stat-avg').textContent = avg ? formatPrice(avg) : '–';
+    }
+
+    async function poll() {
+        try {
+            const [ordersRes, callsRes] = await Promise.all([
+                fetch(`/api/admin/orders/${RESTAURANT_ID}`),
+                fetch(`/api/admin/calls/${RESTAURANT_ID}`)
+            ]);
+
+            const orders = await ordersRes.json();
+            const calls = await callsRes.json();
+
+            renderOrders(orders);
+            renderCalls(calls);
+            updateStats(orders);
+
+            document.getElementById('last-update').textContent =
+                'Updated ' + new Date().toLocaleTimeString();
+        } catch (e) {
+            console.error('Poll error:', e);
+        }
+    }
+
+    async function updateStatus(orderId, status) {
+        await fetch(`/admin/order/${orderId}/status`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({status})
+        });
+        showToast('Status updated ✓');
+        poll();
+    }
+
+    async function cancelOrder(orderId) {
+        if (!confirm('Cancel this order?')) return;
+        await fetch(`/admin/order/${orderId}/cancel`, {method: 'POST'});
+        showToast('Order cancelled');
+        poll();
+    }
+
+    async function answerCall(callId) {
+        await fetch(`/admin/call/${callId}/answer`, {method: 'POST'});
+        showToast('✓ On my way!');
+        poll();
+    }
+
+    // Старт
+    poll();
+    setInterval(poll, 5000);
+</script>
+
+</body>
+</html>

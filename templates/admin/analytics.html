@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="lo">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ສະຖິຕິ · Sabaidee Kitchen</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --primary: #FF7A30;
+            --teal: #4ECDC4;
+            --success: #2D9B6B;
+            --accent: #FFB020;
+            --bg: #F5F3EE;
+            --surface: #FFFFFF;
+            --border: #EDE8E0;
+            --text: #1A1A1A;
+            --muted: #999999;
+            --nav: #1A1A2E;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+        }
+
+        .nav {
+            background: var(--nav);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-brand {
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            padding: 14px 0;
+            margin-right: 24px;
+            white-space: nowrap;
+        }
+
+        .nav-tabs {
+            display: flex;
+            flex: 1;
+        }
+
+        .nav-tab {
+            padding: 14px 16px;
+            font-size: 11px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.45);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            text-decoration: none;
+            white-space: nowrap;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1px;
+        }
+
+        .nav-tab .lo {
+            font-size: 11px;
+        }
+
+        .nav-tab .en {
+            font-size: 8px;
+            opacity: 0.5;
+        }
+
+        .nav-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .body {
+            padding: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* ── Period tabs ── */
+        .period-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .period-btn {
+            padding: 7px 16px;
+            border-radius: 20px;
+            border: 1.5px solid var(--border);
+            background: var(--surface);
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--muted);
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            transition: all .15s;
+        }
+
+        .period-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+        }
+
+        /* ── Stats grid ── */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .stat {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+        }
+
+        .stat-n {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1.1;
+        }
+
+        .stat-lo {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text);
+            margin-top: 4px;
+        }
+
+        .stat-en {
+            font-size: 9px;
+            color: var(--muted);
+        }
+
+        /* ── Cards row ── */
+        .cards-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .cards-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* ── Bar chart (time of day) ── */
+        .bar-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .bar-label {
+            font-size: 10px;
+            color: var(--muted);
+            width: 56px;
+            flex-shrink: 0;
+        }
+
+        .bar-track {
+            flex: 1;
+            height: 10px;
+            background: var(--bg);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 5px;
+            background: var(--primary);
+            transition: width 0.6s ease;
+        }
+
+        .bar-fill.teal {
+            background: var(--teal);
+        }
+
+        .bar-fill.accent {
+            background: var(--accent);
+        }
+
+        .bar-fill.success {
+            background: var(--success);
+        }
+
+        .bar-count {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text);
+            width: 28px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        /* ── Top dishes ── */
+        .top-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .top-item:last-child {
+            border-bottom: none;
+        }
+
+        .top-rank {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            font-weight: 700;
+            color: var(--muted);
+            flex-shrink: 0;
+        }
+
+        .top-rank.gold {
+            background: #FFF8E0;
+            color: #CC8800;
+        }
+
+        .top-rank.silver {
+            background: #F5F5F5;
+            color: #888;
+        }
+
+        .top-rank.bronze {
+            background: #FFF0E8;
+            color: #CC6600;
+        }
+
+        .top-name {
+            flex: 1;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .top-count {
+            font-size: 11px;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        .top-bar-wrap {
+            width: 80px;
+            height: 6px;
+            background: var(--bg);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .top-bar {
+            height: 100%;
+            border-radius: 3px;
+            background: var(--primary);
+        }
+
+        /* ── Status breakdown ── */
+        .breakdown {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .bdown-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .bdown-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text);
+            min-width: 110px;
+        }
+
+        .bdown-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .bdown-track {
+            flex: 1;
+            height: 8px;
+            background: var(--bg);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .bdown-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.6s ease;
+        }
+
+        .bdown-pct {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text);
+            width: 38px;
+            text-align: right;
+        }
+
+        /* ── Revenue chart ── */
+        .revenue-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            height: 80px;
+            margin-top: 8px;
+        }
+
+        .rev-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            height: 100%;
+            justify-content: flex-end;
+        }
+
+        .rev-bar {
+            width: 100%;
+            border-radius: 4px 4px 0 0;
+            background: var(--primary);
+            opacity: 0.8;
+            transition: height 0.6s ease;
+            min-height: 4px;
+        }
+
+        .rev-bar:hover {
+            opacity: 1;
+        }
+
+        .rev-label {
+            font-size: 8px;
+            color: var(--muted);
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .loading {
+            text-align: center;
+            color: var(--muted);
+            font-size: 12px;
+            padding: 40px;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="nav">
+    <div class="nav-brand">🐘 Sabaidee</div>
+    <div class="nav-tabs">
+        <a href="/admin/dashboard" class="nav-tab">
+            <span class="lo">ໜ້າຫຼັກ</span>
+            <span class="en">Dashboard</span>
+        </a>
+        <a href="/admin/menu" class="nav-tab">
+            <span class="lo">ເມນູ</span>
+            <span class="en">Menu</span>
+        </a>
+        <a href="/admin/analytics" class="nav-tab active">
+            <span class="lo">ສະຖິຕິ</span>
+            <span class="en">Analytics</span>
+        </a>
+    </div>
+</nav>
+
+<div class="body">
+
+    <!-- Period -->
+    <div class="period-tabs">
+        <button class="period-btn" onclick="setPeriod(7, this)">7 days</button>
+        <button class="period-btn active" onclick="setPeriod(30, this)">30 days</button>
+        <button class="period-btn" onclick="setPeriod(90, this)">90 days</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-n" id="s-orders">–</div>
+            <div class="stat-lo">ຄໍາສັ່ງທັງໝົດ</div>
+            <div class="stat-en">Total orders</div>
+        </div>
+        <div class="stat">
+            <div class="stat-n" id="s-revenue">–</div>
+            <div class="stat-lo">ລາຍຮັບ</div>
+            <div class="stat-en">Revenue</div>
+        </div>
+        <div class="stat">
+            <div class="stat-n" id="s-avg">–</div>
+            <div class="stat-lo">ສະເລ່ຍ</div>
+            <div class="stat-en">Avg check</div>
+        </div>
+        <div class="stat">
+            <div class="stat-n" id="s-completed">–</div>
+            <div class="stat-lo">ສໍາເລັດ</div>
+            <div class="stat-en">Completed</div>
+        </div>
+    </div>
+
+    <!-- Row 1: Time of day + Top dishes -->
+    <div class="cards-row">
+
+        <div class="card">
+            <div class="card-title">⏰ Orders by time</div>
+            <div id="time-chart">
+                <div class="loading">Loading...</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">🏆 Top dishes</div>
+            <div id="top-dishes">
+                <div class="loading">Loading...</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Row 2: Status breakdown + Revenue by day -->
+    <div class="cards-row">
+
+        <div class="card">
+            <div class="card-title">📊 Status breakdown</div>
+            <div id="status-breakdown">
+                <div class="loading">Loading...</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">💰 Revenue by day</div>
+            <div id="revenue-chart">
+                <div class="loading">Loading...</div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    const RESTAURANT_ID = {
+    {
+        restaurant.id
+    }
+    }
+
+    let currentPeriod = 30;
+
+    function fmt(val) {
+        if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M ₭';
+        if (val >= 1000) return (val / 1000).toFixed(0) + 'K ₭';
+        return val + ' ₭';
+    }
+
+    function setPeriod(days, btn) {
+        currentPeriod = days;
+        document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        loadAnalytics();
+    }
+
+    async function loadAnalytics() {
+        const res = await fetch(`/api/admin/analytics/${RESTAURANT_ID}?days=${currentPeriod}`);
+        const data = await res.json();
+
+        // Stats
+        document.getElementById('s-orders').textContent = data.total_orders;
+        document.getElementById('s-revenue').textContent = fmt(data.total_revenue);
+        document.getElementById('s-avg').textContent = data.avg_check ? fmt(Math.round(data.avg_check)) : '–';
+        document.getElementById('s-completed').textContent = data.completed_percentage.toFixed(1) + '%';
+
+        // Time of day
+        renderTimeChart(data.by_time);
+
+        // Top dishes
+        renderTopDishes(data.top_dishes);
+
+        // Status breakdown
+        renderStatusBreakdown(data);
+
+        // Revenue by day
+        renderRevenueChart(data.by_day);
+    }
+
+    function renderTimeChart(byTime) {
+        if (!byTime) return;
+        const slots = [
+            {label: 'Morning\n6–11', key: 'morning', color: 'accent'},
+            {label: 'Lunch\n11–15', key: 'lunch', color: ''},
+            {label: 'Evening\n15–21', key: 'evening', color: 'teal'},
+            {label: 'Night\n21–6', key: 'night', color: 'success'},
+        ];
+        const max = Math.max(...slots.map(s => byTime[s.key] || 0)) || 1;
+
+        document.getElementById('time-chart').innerHTML = slots.map(s => {
+            const count = byTime[s.key] || 0;
+            const pct = Math.round(count / max * 100);
+            return `
+          <div class="bar-row">
+            <div class="bar-label" style="white-space:pre-line;font-size:9px">${s.label}</div>
+            <div class="bar-track">
+              <div class="bar-fill ${s.color}" style="width:${pct}%"></div>
+            </div>
+            <div class="bar-count">${count}</div>
+          </div>
+        `;
+        }).join('');
+    }
+
+    function renderTopDishes(dishes) {
+        if (!dishes || !dishes.length) {
+            document.getElementById('top-dishes').innerHTML = '<div class="loading">No data</div>';
+            return;
+        }
+        const max = dishes[0].count || 1;
+        const rankClass = ['gold', 'silver', 'bronze'];
+
+        document.getElementById('top-dishes').innerHTML = dishes.slice(0, 5).map((d, i) => `
+        <div class="top-item">
+          <div class="top-rank ${rankClass[i] || ''}">${i + 1}</div>
+          <div class="top-name">${d.name}</div>
+          <div class="top-bar-wrap">
+            <div class="top-bar" style="width:${Math.round(d.count / max * 100)}%"></div>
+          </div>
+          <div class="top-count">${d.count}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderStatusBreakdown(data) {
+        const total = data.total_orders || 1;
+        const completed = data.completed_orders || 0;
+        const pending = data.pending_orders || 0;
+        const cancelled = data.cancelled_orders || 0;
+
+        const rows = [
+            {label: '✅ Completed', count: completed, color: '#2D9B6B', dot: '#2D9B6B'},
+            {label: '⏳ Pending', count: pending, color: '#FFB020', dot: '#FFB020'},
+            {label: '❌ Cancelled', count: cancelled, color: '#FF4444', dot: '#FF4444'},
+        ];
+
+        document.getElementById('status-breakdown').innerHTML = `
+        <div class="breakdown">
+          ${rows.map(r => {
+            const pct = (r.count / total * 100).toFixed(1);
+            return `
+              <div class="bdown-row">
+                <div class="bdown-label">
+                  <div class="bdown-dot" style="background:${r.dot}"></div>
+                  ${r.label}
+                </div>
+                <div class="bdown-track">
+                  <div class="bdown-fill" style="width:${pct}%;background:${r.color}"></div>
+                </div>
+                <div class="bdown-pct">${pct}%</div>
+              </div>
+            `;
+        }).join('')}
+        </div>
+        <div style="text-align:center;font-size:10px;color:var(--muted);margin-top:14px">
+          Total: ${total} orders
+        </div>
+      `;
+    }
+
+    function renderRevenueChart(byDay) {
+        if (!byDay || !byDay.length) {
+            document.getElementById('revenue-chart').innerHTML = '<div class="loading">No data</div>';
+            return;
+        }
+        // Показываем последние 14 дней
+        const slice = byDay.slice(-14);
+        const max = Math.max(...slice.map(d => d.revenue)) || 1;
+
+        document.getElementById('revenue-chart').innerHTML = `
+        <div class="revenue-chart">
+          ${slice.map(d => {
+            const pct = Math.round(d.revenue / max * 100);
+            const label = d.date.slice(5); // MM-DD
+            return `
+              <div class="rev-col">
+                <div class="rev-bar" style="height:${pct}%" title="${fmt(d.revenue)}"></div>
+                <div class="rev-label">${label}</div>
+              </div>
+            `;
+        }).join('')}
+        </div>
+      `;
+    }
+
+    loadAnalytics();
+</script>
+
+</body>
+</html>
