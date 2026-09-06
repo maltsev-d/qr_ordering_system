@@ -19,7 +19,7 @@
             --teal: #4ECDC4;
             --success: #2D9B6B;
             --accent: #FFB020;
-            --bg: #F5F3EE;
+            --bg: #EDEAE3;
             --surface: #FFFFFF;
             --border: #EDE8E0;
             --text: #1A1A1A;
@@ -321,7 +321,7 @@
             overflow: hidden;
             margin-bottom: 10px;
             display: flex;
-            height: 90px;
+            height: 110px;
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
             border: 1.5px solid transparent;
@@ -333,7 +333,7 @@
         }
 
         .dish-img {
-            width: 90px;
+            width: 120px;
             flex-shrink: 0;
             display: flex;
             align-items: center;
@@ -469,7 +469,7 @@
         }
 
         .detail-img {
-            height: 180px;
+            height: 220px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1243,14 +1243,6 @@
                             <div>
                                 <div class="dish-name" x-text="dish['name_' + langField]"></div>
                                 <div class="dish-name-lo" x-text="dish.name_lo" x-show="lang !== 'lo'"></div>
-                                <div class="dish-tags">
-                                    <template x-if="hasSpicy(dish)">
-                                        <span class="tag tag-spicy">🌶️ Spicy</span>
-                                    </template>
-                                    <template x-if="isGlutenFree(dish)">
-                                        <span class="tag tag-teal">Gluten-free</span>
-                                    </template>
-                                </div>
                             </div>
                             <div class="dish-bottom">
                                 <div class="dish-price" x-text="formatPrice(dish.price)"></div>
@@ -1306,7 +1298,7 @@
                         <div class="detail-desc" x-text="selectedDish['desc_' + langField]"></div>
                         <div class="detail-price-row">
                             <div class="detail-price" x-text="formatPrice(selectedDish.price)"></div>
-                            <div class="detail-usd" x-text="'~$' + (selectedDish.price / 20500).toFixed(2)"></div>
+                            <div class="detail-usd" x-text="'~$' + (selectedDish.price / 22500).toFixed(2)"></div>
                         </div>
 
                         <template x-for="mg in selectedDish.modifier_groups" :key="mg.id">

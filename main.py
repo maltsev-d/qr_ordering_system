@@ -223,10 +223,10 @@ async def create_order(
     order_type_label = "🍽️ Dine-in" if order_type == "dine_in" else "🥡 Takeaway"
 
     await send_telegram(
-        f"🆕 <b>Новый заказ #{order.id:03d}</b>\n"
-        f"ໂຕະ {table.number} · {order_type_label}\n\n"
+        f"🆕 <b>New order / ຄໍາສັ່ງໃໝ່ #{order.id:03d}</b>\n"
+        f"Table / ໂຕະ {table.number} · {order_type_label}\n\n"
         f"{items_text}\n\n"
-        f"<b>Итого: {order.total:,} ₭</b>"
+        f"<b>Total / ລວມ: {order.total:,} ₭</b>"
     )
 
     return RedirectResponse(url=f"/order-done/{order.id}?lang={lang}", status_code=303)
@@ -305,9 +305,8 @@ async def call_waiter(
     db.commit()
 
     await send_telegram(
-        f"🔔 <b>Вызов официанта!</b>\n"
-        f"ໂຕະ {table.number} (Table {table.number})\n"
-        f"Ресторан: {restaurant.name}"
+        f"🔔 <b>Call waiter / ເອີ້ນພະນັກງານ</b>\n"
+        f"Table / ໂຕະ {table.number})"
     )
 
     return {
