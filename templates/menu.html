@@ -6,7 +6,7 @@
     <title>{{ restaurant.name }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/css/flag-icons.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
     <style>
         *, *::before, *::after {
             box-sizing: border-box;
@@ -1044,7 +1044,6 @@
     }
 
     const LANG = "{{ lang or '' }}";
-
     const CATEGORIES = {
     {
         categories_json | safe
@@ -1056,6 +1055,7 @@
         dishes_json | safe
     }
     }
+
 
 
 
@@ -1675,6 +1675,6 @@
         };
     }
 </script>
-
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>
 </html>
