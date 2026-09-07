@@ -538,7 +538,7 @@ async def health_check():
     return {"status": "ok"}
 
 
-@app.head("/health")
+@app.head("/ping")
 async def health_check():
     return {"status": "ok"}
 
