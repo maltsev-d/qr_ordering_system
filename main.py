@@ -543,15 +543,23 @@ async def health_check():
     return {"status": "ok"}
 
 
+QR_BASE_URL = "https://qr-menu.maltsevdmitriiy.workers.dev"
+
+
 @app.get("/admin/qr/{restaurant_id}/{table_id}")
-async def generate_qr(restaurant_id: int, table_id: int, request: Request):
-    import qrcode, io
+async def generate_qr(restaurant_id: int, table_id: int):
+    import qrcode
+    import io
     from fastapi.responses import StreamingResponse
-    url = f"{request.base_url}menu/{restaurant_id}/{table_id}"
+
+    url = f"{QR_BASE_URL}/menu/{restaurant_id}/{table_id}"
+
     img = qrcode.make(url)
+
     buf = io.BytesIO()
     img.save(buf, format="PNG")
     buf.seek(0)
+
     return StreamingResponse(buf, media_type="image/png")
 
 
