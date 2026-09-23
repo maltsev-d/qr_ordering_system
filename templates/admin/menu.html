@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu · Sabaidee Kitchen</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --primary: #FF7A30;
+            --success: #2D9B6B;
+            --danger: #E53E3E;
+            --accent: #FFB020;
+            --bg: #EDEAE3;
+            --surface: #FFFFFF;
+            --border: #EDE8E0;
+            --text: #1A1A1A;
+            --muted: #999999;
+            --nav: #1A1A2E;
+        }
+
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); min-height: 100vh; }
+
+        /* ── Nav ── */
+        .nav {
+            background: var(--nav);
+            display: flex; align-items: center;
+            padding: 0 20px;
+            position: sticky; top: 0; z-index: 100;
+        }
+        .nav-brand { color: #fff; font-size: 14px; font-weight: 700; padding: 14px 0; margin-right: 24px; }
+        .nav-tabs { display: flex; flex: 1; }
+        .nav-tab {
+            padding: 14px 16px; font-size: 11px; font-weight: 600;
+            color: rgba(255,255,255,0.45); cursor: pointer;
+            border-bottom: 2px solid transparent; text-decoration: none;
+            display: flex; flex-direction: column; align-items: center; gap: 1px;
+        }
+        .nav-tab .lo { font-size: 11px; }
+        .nav-tab .en { font-size: 8px; opacity: 0.5; }
+        .nav-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+        /* ── Layout ── */
+        .body { padding: 20px; max-width: 1000px; margin: 0 auto; }
+
+        .toolbar {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 20px; gap: 12px;
+        }
+        .toolbar-title { font-size: 18px; font-weight: 700; color: var(--text); }
+        .toolbar-right { display: flex; gap: 8px; }
+
+        .btn {
+            padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 600;
+            font-family: 'Poppins', sans-serif; cursor: pointer; border: none;
+            display: inline-flex; align-items: center; gap: 6px; transition: opacity .15s;
+        }
+        .btn:hover { opacity: 0.85; }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-outline { background: var(--surface); color: var(--text); border: 1.5px solid var(--border); }
+        .btn-danger { background: #FFF0F0; color: var(--danger); border: 1.5px solid #FECACA; }
+        .btn-sm { padding: 5px 10px; font-size: 11px; }
+
+        /* ── Category section ── */
+        .cat-section { margin-bottom: 16px; }
+
+        .cat-header {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px 12px 0 0;
+            padding: 12px 16px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .cat-header-expanded { border-radius: 12px 12px 0 0; }
+        .cat-header-collapsed { border-radius: 12px; }
+
+        .cat-toggle { cursor: pointer; color: var(--muted); font-size: 14px; transition: transform .2s; }
+        .cat-toggle.open { transform: rotate(90deg); }
+
+        .cat-name-wrap { flex: 1; display: flex; align-items: center; gap: 8px; }
+        .cat-name { font-size: 14px; font-weight: 700; color: var(--text); }
+        .cat-name-lo { font-size: 11px; color: var(--muted); }
+        .cat-count {
+            font-size: 10px; font-weight: 700; color: var(--muted);
+            background: var(--bg); border-radius: 20px; padding: 2px 8px;
+        }
+        .cat-actions { display: flex; gap: 6px; }
+
+        /* ── Dish table ── */
+        .dish-table {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-top: none;
+            border-radius: 0 0 12px 12px;
+            overflow: hidden;
+        }
+
+        .dish-table-head {
+            display: grid;
+            grid-template-columns: 48px 1fr 90px 70px 60px 60px 60px 60px 80px;
+            padding: 8px 16px;
+            background: #F8F7F4;
+            border-bottom: 1px solid var(--border);
+            font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .dish-row {
+            display: grid;
+            grid-template-columns: 48px 1fr 90px 70px 60px 60px 60px 60px 80px;
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border);
+            align-items: center;
+            transition: background .1s;
+        }
+        .dish-row:last-child { border-bottom: none; }
+        .dish-row:hover { background: #FAFAF8; }
+
+        .dish-thumb {
+            width: 36px; height: 36px; border-radius: 8px;
+            object-fit: cover; background: var(--bg);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; overflow: hidden; flex-shrink: 0;
+        }
+        .dish-thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+
+        .dish-info { padding-right: 12px; }
+        .dish-name { font-size: 13px; font-weight: 600; color: var(--text); }
+        .dish-name-lo { font-size: 10px; color: var(--muted); }
+
+        .dish-price { font-size: 13px; font-weight: 600; color: var(--text); }
+        .dish-price-old { font-size: 10px; color: var(--muted); text-decoration: line-through; }
+
+        /* ── Toggle switch ── */
+        .tog-wrap { display: flex; align-items: center; justify-content: center; }
+        .tog {
+            position: relative; width: 36px; height: 20px;
+            cursor: pointer; display: inline-block;
+        }
+        .tog input { opacity: 0; width: 0; height: 0; }
+        .tog-slider {
+            position: absolute; inset: 0;
+            background: #ddd; border-radius: 20px;
+            transition: background .2s;
+        }
+        .tog-slider::before {
+            content: ''; position: absolute;
+            width: 14px; height: 14px; border-radius: 50%;
+            background: #fff; top: 3px; left: 3px;
+            transition: transform .2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,.2);
+        }
+        .tog input:checked + .tog-slider { background: var(--success); }
+        .tog input:checked + .tog-slider::before { transform: translateX(16px); }
+        .tog input.tog-orange:checked + .tog-slider { background: var(--accent); }
+        .tog input.tog-primary:checked + .tog-slider { background: var(--primary); }
+
+        .dish-actions { display: flex; gap: 6px; justify-content: flex-end; }
+        .icon-btn {
+            width: 28px; height: 28px; border-radius: 6px; border: none;
+            background: var(--bg); color: var(--muted); cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; transition: all .15s;
+        }
+        .icon-btn:hover { background: var(--border); color: var(--text); }
+        .icon-btn.danger:hover { background: #FFF0F0; color: var(--danger); }
+
+        .add-dish-row {
+            padding: 10px 16px;
+            border-top: 1px dashed var(--border);
+        }
+        .add-dish-btn {
+            background: none; border: none; color: var(--primary);
+            font-size: 12px; font-weight: 600; cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            display: flex; align-items: center; gap: 6px;
+        }
+
+        /* ── Slide panel ── */
+        .panel-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,.35);
+            z-index: 200; opacity: 0; pointer-events: none; transition: opacity .25s;
+        }
+        .panel-overlay.open { opacity: 1; pointer-events: all; }
+
+        .panel {
+            position: fixed; top: 0; right: -520px; width: 520px; height: 100vh;
+            background: var(--surface); z-index: 201;
+            display: flex; flex-direction: column;
+            transition: right .25s cubic-bezier(.4,0,.2,1);
+            box-shadow: -4px 0 24px rgba(0,0,0,.12);
+        }
+        .panel.open { right: 0; }
+
+        .panel-head {
+            padding: 20px 24px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .panel-title { font-size: 16px; font-weight: 700; color: var(--text); }
+        .panel-close {
+            width: 32px; height: 32px; border-radius: 8px; border: none;
+            background: var(--bg); color: var(--muted); cursor: pointer;
+            font-size: 16px; display: flex; align-items: center; justify-content: center;
+        }
+
+        .panel-body { flex: 1; overflow-y: auto; padding: 20px 24px; }
+        .panel-foot {
+            padding: 16px 24px; border-top: 1px solid var(--border);
+            display: flex; gap: 10px; flex-shrink: 0;
+        }
+
+        /* ── Form elements ── */
+        .form-group { margin-bottom: 16px; }
+        .form-label {
+            display: block; font-size: 11px; font-weight: 700;
+            color: var(--muted); margin-bottom: 6px; text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .form-input {
+            width: 100%; padding: 9px 12px; border: 1.5px solid var(--border);
+            border-radius: 8px; font-size: 13px; font-family: 'Poppins', sans-serif;
+            color: var(--text); background: var(--surface); transition: border-color .15s;
+            outline: none;
+        }
+        .form-input:focus { border-color: var(--primary); }
+        textarea.form-input { resize: vertical; min-height: 72px; }
+        select.form-input { cursor: pointer; }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+        /* ── Lang tabs ── */
+        .lang-tabs { display: flex; gap: 4px; margin-bottom: 10px; flex-wrap: wrap; }
+        .lang-tab {
+            padding: 4px 10px; border-radius: 6px; border: 1.5px solid var(--border);
+            font-size: 11px; font-weight: 600; cursor: pointer;
+            background: var(--surface); color: var(--muted);
+            font-family: 'Poppins', sans-serif; transition: all .15s;
+        }
+        .lang-tab.active { background: var(--nav); color: #fff; border-color: var(--nav); }
+
+        /* ── Photo upload ── */
+        .photo-upload {
+            border: 2px dashed var(--border); border-radius: 10px;
+            padding: 20px; text-align: center; cursor: pointer;
+            transition: border-color .15s; position: relative;
+        }
+        .photo-upload:hover { border-color: var(--primary); }
+        .photo-upload input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+        .photo-upload-icon { font-size: 24px; color: var(--muted); margin-bottom: 6px; }
+        .photo-upload-text { font-size: 12px; color: var(--muted); }
+        .photo-preview {
+            width: 80px; height: 80px; border-radius: 8px;
+            object-fit: cover; margin: 0 auto 8px; display: block;
+        }
+
+        /* ── Tag checkboxes ── */
+        .tag-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+        .tag-check { display: none; }
+        .tag-check-label {
+            padding: 4px 10px; border-radius: 20px; border: 1.5px solid var(--border);
+            font-size: 11px; font-weight: 600; cursor: pointer; color: var(--muted);
+            transition: all .15s; user-select: none;
+        }
+        .tag-check:checked + .tag-check-label {
+            background: var(--primary); border-color: var(--primary); color: #fff;
+        }
+
+        /* ── Toggle row in panel ── */
+        .toggle-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 0; border-bottom: 1px solid var(--border);
+        }
+        .toggle-row:last-child { border-bottom: none; }
+        .toggle-label { font-size: 13px; font-weight: 600; color: var(--text); }
+        .toggle-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+        /* ── Section divider in panel ── */
+        .panel-section { margin-bottom: 20px; }
+        .panel-section-title {
+            font-size: 11px; font-weight: 700; color: var(--muted);
+            text-transform: uppercase; letter-spacing: 0.04em;
+            margin-bottom: 12px; padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* ── Modifiers in panel ── */
+        .mod-group {
+            background: var(--bg); border-radius: 8px; padding: 12px;
+            margin-bottom: 8px;
+        }
+        .mod-group-head {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .mod-group-name { font-size: 12px; font-weight: 700; color: var(--text); }
+        .mod-item {
+            display: flex; align-items: center; gap: 8px;
+            padding: 6px 0; border-bottom: 1px solid var(--border);
+            font-size: 12px; color: var(--text);
+        }
+        .mod-item:last-child { border-bottom: none; }
+        .mod-price { margin-left: auto; color: var(--muted); font-size: 11px; }
+
+        /* ── Category modal ── */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,.4);
+            z-index: 300; display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity .2s;
+        }
+        .modal-overlay.open { opacity: 1; pointer-events: all; }
+        .modal {
+            background: var(--surface); border-radius: 16px;
+            padding: 24px; width: 400px; max-width: 90vw;
+            box-shadow: 0 8px 40px rgba(0,0,0,.15);
+            transform: scale(.95); transition: transform .2s;
+        }
+        .modal-overlay.open .modal { transform: scale(1); }
+        .modal-title { font-size: 15px; font-weight: 700; margin-bottom: 16px; }
+        .modal-foot { display: flex; gap: 8px; margin-top: 16px; justify-content: flex-end; }
+
+        .empty-cat {
+            padding: 20px 16px; text-align: center;
+            color: var(--muted); font-size: 12px;
+            border-bottom: none;
+        }
+
+        .toast {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+            background: var(--nav); color: #fff; padding: 10px 20px;
+            border-radius: 20px; font-size: 13px; font-weight: 600;
+            z-index: 500; transition: transform .3s; pointer-events: none;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+
+<nav class="nav">
+    <div class="nav-brand">🐘 Sabaidee</div>
+    <div class="nav-tabs">
+        <a href="/admin/dashboard" class="nav-tab">
+            <span class="lo">ໜ້າຫຼັກ</span><span class="en">Dashboard</span>
+        </a>
+        <a href="/admin/analytics" class="nav-tab">
+            <span class="lo">ສະຖິຕິ</span><span class="en">Analytics</span>
+        </a>
+        <a href="/admin/menu" class="nav-tab active">
+            <span class="lo">ເມນູ</span><span class="en">Menu</span>
+        </a>
+        <a href="/admin/qr-tables" class="nav-tab">
+            <span class="lo">QR ໂຕະ</span><span class="en">QR Tables</span>
+        </a>
+    </div>
+</nav>
+
+<div class="body">
+    <div class="toolbar">
+        <div class="toolbar-title">ເມນູ · Menu</div>
+        <div class="toolbar-right">
+            <button class="btn btn-outline" onclick="openCatModal()">
+                <i class="bi bi-folder-plus"></i> New Category
+            </button>
+            <button class="btn btn-primary" onclick="openDishPanel(null)">
+                <i class="bi bi-plus-lg"></i> Add Item
+            </button>
+        </div>
+    </div>
+
+    <div id="menu-list">
+        <div style="text-align:center;padding:40px;color:var(--muted)">Loading...</div>
+    </div>
+</div>
+
+<!-- ── Dish panel ── -->
+<div class="panel-overlay" id="panel-overlay" onclick="closePanel()"></div>
+<div class="panel" id="dish-panel">
+    <div class="panel-head">
+        <div class="panel-title" id="panel-title">Add Item</div>
+        <button class="panel-close" onclick="closePanel()">✕</button>
+    </div>
+    <div class="panel-body">
+
+        <!-- Photo -->
+        <div class="panel-section">
+            <div class="panel-section-title">Photo</div>
+            <div class="photo-upload" onclick="document.getElementById('photo-input').click()">
+                <input type="file" id="photo-input" accept="image/*" onchange="handlePhoto(this)">
+                <div id="photo-preview-wrap">
+                    <div class="photo-upload-icon"><i class="bi bi-image"></i></div>
+                    <div class="photo-upload-text">Click to upload · max 2MB</div>
+                </div>
+            </div>
+            <input type="hidden" id="f-photo-url">
+        </div>
+
+        <!-- Names & Descriptions -->
+        <div class="panel-section">
+            <div class="panel-section-title">Name & Description</div>
+            <div class="lang-tabs" id="lang-tabs">
+                <button class="lang-tab active" onclick="switchLang('en', this)">EN</button>
+                <button class="lang-tab" onclick="switchLang('lo', this)">LO</button>
+                <button class="lang-tab" onclick="switchLang('ru', this)">RU</button>
+                <button class="lang-tab" onclick="switchLang('zh', this)">ZH</button>
+                <button class="lang-tab" onclick="switchLang('th', this)">TH</button>
+                <button class="lang-tab" onclick="switchLang('ko', this)">KO</button>
+                <button class="lang-tab" onclick="switchLang('fr', this)">FR</button>
+                <button class="lang-tab" onclick="switchLang('ar', this)">AR</button>
+            </div>
+            <div class="form-group">
+                <input class="form-input" id="f-name" placeholder="Dish name" maxlength="120">
+            </div>
+            <div class="form-group">
+                <textarea class="form-input" id="f-desc" placeholder="Description (optional)" rows="3"></textarea>
+            </div>
+        </div>
+
+        <!-- Pricing & Category -->
+        <div class="panel-section">
+            <div class="panel-section-title">Pricing & Category</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Price (₭)</label>
+                    <input class="form-input" id="f-price" type="number" placeholder="0">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Discount price (₭)</label>
+                    <input class="form-input" id="f-discount-price" type="number" placeholder="–">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Category</label>
+                <select class="form-input" id="f-category"></select>
+            </div>
+        </div>
+
+        <!-- Dietary tags -->
+        <div class="panel-section">
+            <div class="panel-section-title">Dietary Tags</div>
+            <div class="tag-grid" id="dietary-tags">
+                <input type="checkbox" class="tag-check" id="dt-veg" value="veg">
+                <label class="tag-check-label" for="dt-veg">🌱 Veg</label>
+                <input type="checkbox" class="tag-check" id="dt-no_pork" value="no_pork">
+                <label class="tag-check-label" for="dt-no_pork">🚫🐷 No pork</label>
+                <input type="checkbox" class="tag-check" id="dt-no_gluten" value="no_gluten">
+                <label class="tag-check-label" for="dt-no_gluten">🌾 No gluten</label>
+                <input type="checkbox" class="tag-check" id="dt-spicy" value="spicy">
+                <label class="tag-check-label" for="dt-spicy">🌶 Spicy</label>
+                <input type="checkbox" class="tag-check" id="dt-halal" value="halal">
+                <label class="tag-check-label" for="dt-halal">☪️ Halal</label>
+                <input type="checkbox" class="tag-check" id="dt-seafood" value="seafood">
+                <label class="tag-check-label" for="dt-seafood">🦐 Seafood</label>
+            </div>
+        </div>
+
+        <!-- Allergens -->
+        <div class="panel-section">
+            <div class="panel-section-title">Allergens</div>
+            <div class="tag-grid">
+                <input type="checkbox" class="tag-check" id="al-gluten" value="gluten">
+                <label class="tag-check-label" for="al-gluten">🌾 Gluten</label>
+                <input type="checkbox" class="tag-check" id="al-nuts" value="nuts">
+                <label class="tag-check-label" for="al-nuts">🥜 Nuts</label>
+                <input type="checkbox" class="tag-check" id="al-dairy" value="dairy">
+                <label class="tag-check-label" for="al-dairy">🥛 Dairy</label>
+                <input type="checkbox" class="tag-check" id="al-eggs" value="eggs">
+                <label class="tag-check-label" for="al-eggs">🥚 Eggs</label>
+                <input type="checkbox" class="tag-check" id="al-shellfish" value="shellfish">
+                <label class="tag-check-label" for="al-shellfish">🦞 Shellfish</label>
+                <input type="checkbox" class="tag-check" id="al-soy" value="soy">
+                <label class="tag-check-label" for="al-soy">🫘 Soy</label>
+            </div>
+        </div>
+
+        <!-- Toggles -->
+        <div class="panel-section">
+            <div class="panel-section-title">Visibility & Badges</div>
+            <div class="toggle-row">
+                <div>
+                    <div class="toggle-label">Active</div>
+                    <div class="toggle-sub">Dish exists in menu</div>
+                </div>
+                <label class="tog"><input type="checkbox" id="f-active" checked><span class="tog-slider"></span></label>
+            </div>
+            <div class="toggle-row">
+                <div>
+                    <div class="toggle-label">Available now</div>
+                    <div class="toggle-sub">Stop-list toggle</div>
+                </div>
+                <label class="tog"><input type="checkbox" id="f-available" checked><span class="tog-slider"></span></label>
+            </div>
+            <div class="toggle-row">
+                <div>
+                    <div class="toggle-label">NEW badge</div>
+                    <div class="toggle-sub">Show NEW ribbon on card</div>
+                </div>
+                <label class="tog"><input type="checkbox" id="f-is-new" class="tog-orange"><span class="tog-slider"></span></label>
+            </div>
+            <div class="toggle-row">
+                <div>
+                    <div class="toggle-label">Surprise eligible</div>
+                    <div class="toggle-sub">Can appear in Surprise Me</div>
+                </div>
+                <label class="tog"><input type="checkbox" id="f-surprise" class="tog-primary"><span class="tog-slider"></span></label>
+            </div>
+        </div>
+
+        <!-- Modifiers -->
+        <div class="panel-section">
+            <div class="panel-section-title">Modifiers</div>
+            <div id="mod-list">
+                <div style="font-size:12px;color:var(--muted)">Save dish first to add modifiers.</div>
+            </div>
+        </div>
+
+    </div>
+    <div class="panel-foot">
+        <button class="btn btn-primary" style="flex:1" onclick="saveDish()">
+            <i class="bi bi-check-lg"></i> Save
+        </button>
+        <button class="btn btn-outline" onclick="closePanel()">Cancel</button>
+    </div>
+</div>
+
+<!-- ── Category modal ── -->
+<div class="modal-overlay" id="cat-modal">
+    <div class="modal">
+        <div class="modal-title" id="cat-modal-title">New Category</div>
+        <div class="form-group">
+            <label class="form-label">Name (EN)</label>
+            <input class="form-input" id="cat-name-en" placeholder="e.g. Main Course">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Name (LO)</label>
+            <input class="form-input" id="cat-name-lo" placeholder="ລາວ">
+        </div>
+        <input type="hidden" id="cat-edit-id">
+        <div class="modal-foot">
+            <button class="btn btn-outline" onclick="closeCatModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="saveCategory()">Save</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    const RESTAURANT_ID = {{ restaurant.id }}
+    const LANGS = ['en','lo','ru','zh','th','ko','fr','ar'];
+    const LANG_MAP = { en:'name_en', lo:'name_lo', ru:'name_ru', zh:'name_cn', th:'name_th', ko:'name_ko', fr:'name_fr', ar:'name_ar' };
+    const DESC_MAP = { en:'desc_en', lo:'desc_lo', ru:'desc_ru', zh:'desc_cn', th:'desc_th', ko:'desc_ko', fr:'desc_fr', ar:'desc_ar' };
+
+    let menuData = [];
+    let currentDish = null;
+    let currentLang = 'en';
+    let langBuffer = {}; // { en: {name, desc}, lo: {name, desc}, ... }
+
+    // ── Toast ──
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    // ── Load menu ──
+    async function loadMenu() {
+        const res = await fetch(`/api/admin/menu/${RESTAURANT_ID}`);
+        menuData = await res.json();
+        renderMenu();
+        populateCategorySelect();
+    }
+
+    function renderMenu() {
+        const list = document.getElementById('menu-list');
+        if (!menuData.length) {
+            list.innerHTML = `<div style="text-align:center;padding:60px;color:var(--muted)">No categories yet. Create one to start.</div>`;
+            return;
+        }
+        list.innerHTML = menuData.map(cat => renderCategory(cat)).join('');
+    }
+
+    function renderCategory(cat) {
+        const dishes = cat.dishes || [];
+        return `
+        <div class="cat-section" id="cat-${cat.id}">
+            <div class="cat-header cat-header-expanded">
+                <span class="cat-toggle open" onclick="toggleCat(${cat.id}, this)">▶</span>
+                <div class="cat-name-wrap">
+                    <span class="cat-name">${cat.name_en || '–'}</span>
+                    ${cat.name_lo ? `<span class="cat-name-lo">${cat.name_lo}</span>` : ''}
+                    <span class="cat-count">${dishes.length}</span>
+                </div>
+                <div class="cat-actions">
+                    <button class="btn btn-outline btn-sm" onclick="openCatEditModal(${cat.id}, '${(cat.name_en||'').replace(/'/g,"\\'")}', '${(cat.name_lo||'').replace(/'/g,"\\'")}')">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteCategory(${cat.id})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="dish-table" id="cat-body-${cat.id}">
+                <div class="dish-table-head">
+                    <div></div>
+                    <div>Item</div>
+                    <div>Price</div>
+                    <div>Category</div>
+                    <div style="text-align:center">Active</div>
+                    <div style="text-align:center">Avail.</div>
+                    <div style="text-align:center">NEW</div>
+                    <div style="text-align:center">🎲</div>
+                    <div style="text-align:right">Actions</div>
+                </div>
+                ${dishes.length ? dishes.map(d => renderDishRow(d, cat)).join('') : `<div class="empty-cat">No dishes yet</div>`}
+                <div class="add-dish-row">
+                    <button class="add-dish-btn" onclick="openDishPanel(null, ${cat.id})">
+                        <i class="bi bi-plus-circle"></i> Add dish to ${cat.name_en}
+                    </button>
+                </div>
+            </div>
+        </div>`;
+    }
+
+    function renderDishRow(d, cat) {
+        const photo = d.photo_url
+            ? `<div class="dish-thumb"><img src="${d.photo_url}" alt=""></div>`
+            : `<div class="dish-thumb">🍽️</div>`;
+
+        const price = d.discount_price
+            ? `<div class="dish-price-old">${fmtPrice(d.price)}</div><div class="dish-price">${fmtPrice(d.discount_price)}</div>`
+            : `<div class="dish-price">${fmtPrice(d.price)}</div>`;
+
+        return `
+        <div class="dish-row" id="dish-row-${d.id}">
+            ${photo}
+            <div class="dish-info">
+                <div class="dish-name">${d.name_en || '–'}</div>
+                ${d.name_lo ? `<div class="dish-name-lo">${d.name_lo}</div>` : ''}
+            </div>
+            <div>${price}</div>
+            <div style="font-size:11px;color:var(--muted)">${cat.name_en}</div>
+            <div class="tog-wrap">
+                <label class="tog"><input type="checkbox" class="tog-green" ${d.active ? 'checked' : ''} onchange="patchDish(${d.id}, {active: this.checked})"><span class="tog-slider"></span></label>
+            </div>
+            <div class="tog-wrap">
+                <label class="tog"><input type="checkbox" ${d.is_available ? 'checked' : ''} onchange="patchDish(${d.id}, {is_available: this.checked})"><span class="tog-slider"></span></label>
+            </div>
+            <div class="tog-wrap">
+                <label class="tog"><input type="checkbox" class="tog-orange" ${d.is_new ? 'checked' : ''} onchange="patchDish(${d.id}, {is_new: this.checked})"><span class="tog-slider"></span></label>
+            </div>
+            <div class="tog-wrap">
+                <label class="tog"><input type="checkbox" class="tog-primary" ${d.is_surprise_eligible ? 'checked' : ''} onchange="patchDish(${d.id}, {is_surprise_eligible: this.checked})"><span class="tog-slider"></span></label>
+            </div>
+            <div class="dish-actions">
+                <button class="icon-btn" onclick="openDishPanel(${d.id})" title="Edit"><i class="bi bi-pencil"></i></button>
+                <button class="icon-btn danger" onclick="deleteDish(${d.id})" title="Delete"><i class="bi bi-trash"></i></button>
+            </div>
+        </div>`;
+    }
+
+    function fmtPrice(v) { return v ? Number(v).toLocaleString() + ' ₭' : '–'; }
+
+    function toggleCat(catId, el) {
+        const body = document.getElementById(`cat-body-${catId}`);
+        const header = el.closest('.cat-header');
+        const isOpen = el.classList.contains('open');
+        if (isOpen) {
+            body.style.display = 'none';
+            el.classList.remove('open');
+            header.classList.remove('cat-header-expanded');
+            header.classList.add('cat-header-collapsed');
+        } else {
+            body.style.display = '';
+            el.classList.add('open');
+            header.classList.add('cat-header-expanded');
+            header.classList.remove('cat-header-collapsed');
+        }
+    }
+
+    // ── Patch dish toggles inline ──
+    async function patchDish(dishId, data) {
+        await fetch(`/api/admin/dish/${dishId}`, {
+            method: 'PATCH',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+    }
+
+    // ── Delete dish ──
+    async function deleteDish(dishId) {
+        if (!confirm('Delete this dish?')) return;
+        await fetch(`/api/admin/dish/${dishId}`, { method: 'DELETE' });
+        showToast('Dish deleted');
+        loadMenu();
+    }
+
+    // ── Delete category ──
+    async function deleteCategory(catId) {
+        if (!confirm('Delete category and all its dishes?')) return;
+        await fetch(`/api/admin/category/${catId}`, { method: 'DELETE' });
+        showToast('Category deleted');
+        loadMenu();
+    }
+
+    // ── Panel ──
+    function openDishPanel(dishId, defaultCatId = null) {
+        currentDish = dishId ? findDish(dishId) : null;
+        langBuffer = {};
+        LANGS.forEach(l => langBuffer[l] = { name: '', desc: '' });
+
+        document.getElementById('panel-title').textContent = currentDish ? 'Edit Dish' : 'Add Item';
+        document.getElementById('f-price').value = '';
+        document.getElementById('f-discount-price').value = '';
+        document.getElementById('f-active').checked = true;
+        document.getElementById('f-available').checked = true;
+        document.getElementById('f-is-new').checked = false;
+        document.getElementById('f-surprise').checked = false;
+        document.getElementById('f-photo-url').value = '';
+        document.getElementById('photo-preview-wrap').innerHTML = `
+            <div class="photo-upload-icon"><i class="bi bi-image"></i></div>
+            <div class="photo-upload-text">Click to upload · max 2MB</div>`;
+
+        // clear tags
+        document.querySelectorAll('.tag-check').forEach(c => c.checked = false);
+
+        if (currentDish) {
+            LANGS.forEach(l => {
+                langBuffer[l].name = currentDish[LANG_MAP[l]] || '';
+                langBuffer[l].desc = currentDish[DESC_MAP[l]] || '';
+            });
+            document.getElementById('f-price').value = currentDish.price || '';
+            document.getElementById('f-discount-price').value = currentDish.discount_price || '';
+            document.getElementById('f-active').checked = currentDish.active;
+            document.getElementById('f-available').checked = currentDish.is_available;
+            document.getElementById('f-is-new').checked = currentDish.is_new;
+            document.getElementById('f-surprise').checked = currentDish.is_surprise_eligible;
+            if (currentDish.photo_url) {
+                document.getElementById('f-photo-url').value = currentDish.photo_url;
+                document.getElementById('photo-preview-wrap').innerHTML =
+                    `<img src="${currentDish.photo_url}" class="photo-preview" alt="">`;
+            }
+            (currentDish.dietary_tags || []).forEach(t => {
+                const el = document.getElementById(`dt-${t}`);
+                if (el) el.checked = true;
+            });
+            (currentDish.allergens || []).forEach(t => {
+                const el = document.getElementById(`al-${t}`);
+                if (el) el.checked = true;
+            });
+            // modifiers
+            renderModifiers(currentDish.id);
+        } else {
+            document.getElementById('mod-list').innerHTML =
+                `<div style="font-size:12px;color:var(--muted)">Save dish first to add modifiers.</div>`;
+        }
+
+        // set default lang
+        currentLang = 'en';
+        document.querySelectorAll('.lang-tab').forEach(t => t.classList.remove('active'));
+        document.querySelector('.lang-tab').classList.add('active');
+        updateLangFields();
+
+        // set category
+        const catSel = document.getElementById('f-category');
+        if (currentDish) catSel.value = currentDish.category_id;
+        else if (defaultCatId) catSel.value = defaultCatId;
+
+        document.getElementById('panel-overlay').classList.add('open');
+        document.getElementById('dish-panel').classList.add('open');
+    }
+
+    function closePanel() {
+        document.getElementById('panel-overlay').classList.remove('open');
+        document.getElementById('dish-panel').classList.remove('open');
+    }
+
+    function switchLang(lang, btn) {
+        // save current before switching
+        langBuffer[currentLang].name = document.getElementById('f-name').value;
+        langBuffer[currentLang].desc = document.getElementById('f-desc').value;
+        currentLang = lang;
+        document.querySelectorAll('.lang-tab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        updateLangFields();
+    }
+
+    function updateLangFields() {
+        document.getElementById('f-name').value = langBuffer[currentLang].name || '';
+        document.getElementById('f-desc').value = langBuffer[currentLang].desc || '';
+    }
+
+    function populateCategorySelect() {
+        const sel = document.getElementById('f-category');
+        sel.innerHTML = menuData.map(c =>
+            `<option value="${c.id}">${c.name_en}</option>`
+        ).join('');
+    }
+
+    function findDish(dishId) {
+        for (const cat of menuData) {
+            const d = cat.dishes.find(d => d.id === dishId);
+            if (d) return d;
+        }
+        return null;
+    }
+
+    async function saveDish() {
+        // flush current lang
+        langBuffer[currentLang].name = document.getElementById('f-name').value;
+        langBuffer[currentLang].desc = document.getElementById('f-desc').value;
+
+        const dietary_tags = [...document.querySelectorAll('#dietary-tags .tag-check:checked')].map(c => c.value);
+        const allergens = [...document.querySelectorAll('.tag-check[id^="al-"]:checked')].map(c => c.value);
+
+        const payload = {
+            category_id: parseInt(document.getElementById('f-category').value),
+            price: parseInt(document.getElementById('f-price').value) || 0,
+            discount_price: parseInt(document.getElementById('f-discount-price').value) || null,
+            active: document.getElementById('f-active').checked,
+            is_available: document.getElementById('f-available').checked,
+            is_new: document.getElementById('f-is-new').checked,
+            is_surprise_eligible: document.getElementById('f-surprise').checked,
+            photo_url: document.getElementById('f-photo-url').value || null,
+            dietary_tags,
+            allergens,
+        };
+
+        LANGS.forEach(l => {
+            payload[LANG_MAP[l]] = langBuffer[l].name || null;
+            payload[DESC_MAP[l]] = langBuffer[l].desc || null;
+        });
+        // zh fix
+        payload['name_cn'] = langBuffer['zh'].name || null;
+        payload['desc_cn'] = langBuffer['zh'].desc || null;
+
+        if (currentDish) {
+            await fetch(`/api/admin/dish/${currentDish.id}`, {
+                method: 'PATCH',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            showToast('Dish updated ✓');
+        } else {
+            await fetch('/api/admin/dish', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            showToast('Dish created ✓');
+        }
+        closePanel();
+        loadMenu();
+    }
+
+    // ── Photo upload ──
+    async function handlePhoto(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const form = new FormData();
+        form.append('file', file);
+        const res = await fetch('/api/admin/upload-photo', { method: 'POST', body: form });
+        if (res.ok) {
+            const data = await res.json();
+            document.getElementById('f-photo-url').value = data.url;
+            document.getElementById('photo-preview-wrap').innerHTML =
+                `<img src="${data.url}" class="photo-preview" alt="">`;
+        } else {
+            showToast('Upload failed');
+        }
+    }
+
+    // ── Modifiers (read-only for now) ──
+    function renderModifiers(dishId) {
+        const cat = menuData.find(c => c.dishes.some(d => d.id === dishId));
+        if (!cat) return;
+        const dish = cat.dishes.find(d => d.id === dishId);
+        // modifiers loaded separately
+        fetch(`/api/admin/dish/${dishId}/modifiers`)
+            .then(r => r.json())
+            .then(groups => {
+                const el = document.getElementById('mod-list');
+                if (!groups.length) {
+                    el.innerHTML = `<div style="font-size:12px;color:var(--muted)">No modifiers yet.</div>`;
+                    return;
+                }
+                el.innerHTML = groups.map(g => `
+                    <div class="mod-group">
+                        <div class="mod-group-head">
+                            <div class="mod-group-name">${g.name_en} ${g.required ? '(required)' : ''}</div>
+                        </div>
+                        ${g.modifiers.map(m => `
+                            <div class="mod-item">
+                                ${m.emoji || ''} ${m.label_en}
+                                <span class="mod-price">${m.price_add ? '+' + fmtPrice(m.price_add) : 'free'}</span>
+                            </div>`).join('')}
+                    </div>`).join('');
+            }).catch(() => {
+                document.getElementById('mod-list').innerHTML =
+                    `<div style="font-size:12px;color:var(--muted)">No modifiers.</div>`;
+            });
+    }
+
+    // ── Category modal ──
+    function openCatModal() {
+        document.getElementById('cat-modal-title').textContent = 'New Category';
+        document.getElementById('cat-name-en').value = '';
+        document.getElementById('cat-name-lo').value = '';
+        document.getElementById('cat-edit-id').value = '';
+        document.getElementById('cat-modal').classList.add('open');
+    }
+
+    function openCatEditModal(id, nameEn, nameLo) {
+        document.getElementById('cat-modal-title').textContent = 'Edit Category';
+        document.getElementById('cat-name-en').value = nameEn;
+        document.getElementById('cat-name-lo').value = nameLo;
+        document.getElementById('cat-edit-id').value = id;
+        document.getElementById('cat-modal').classList.add('open');
+    }
+
+    function closeCatModal() {
+        document.getElementById('cat-modal').classList.remove('open');
+    }
+
+    async function saveCategory() {
+        const nameEn = document.getElementById('cat-name-en').value.trim();
+        if (!nameEn) { showToast('Name required'); return; }
+        const editId = document.getElementById('cat-edit-id').value;
+        const payload = {
+            name_en: nameEn,
+            name_lo: document.getElementById('cat-name-lo').value.trim() || null,
+            restaurant_id: RESTAURANT_ID,
+        };
+        if (editId) {
+            await fetch(`/api/admin/category/${editId}`, {
+                method: 'PATCH',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            showToast('Category updated ✓');
+        } else {
+            await fetch('/api/admin/category', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            showToast('Category created ✓');
+        }
+        closeCatModal();
+        loadMenu();
+    }
+
+    loadMenu();
+</script>
+
+</body>
+</html>

@@ -1,18 +1,20 @@
 import html
 import json
 import os
+import shutil
+import uuid
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 
 import httpx
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, Form, HTTPException, Request
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session, joinedload
 
-from db.database import (CategoryDB, DishDB, ModifierGroupDB, OrderDB,
+from db.database import (CategoryDB, DishDB, DishModifierGroup, ModifierGroupDB, OrderDB,
                          OrderItemDB, RestaurantDB, TableDB, WaiterCallDB,
                          create_tables, get_db)
 from db.models import (CallWaiterRequest, OrderStatus, UpdateOrderStatusRequest)
@@ -60,22 +62,49 @@ async def send_telegram(text: str):
             print(f"TG error: {e}")
 
 
+# def build_modifier_label(item: OrderItemDB, lang: str) -> str:
+#     if not item.modifiers_json or not item.dish:
+#         return ""
+#     try:
+#         mods = json.loads(item.modifiers_json)
+#     except Exception:
+#         return ""
+#     lf = lang_field(lang)
+#     labels = []
+#     for mg in item.dish.modifier_groups:
+#         mod_id = mods.get(str(mg.id))
+#         if mod_id:
+#             mod = next((m for m in mg.modifiers if str(m.id) == str(mod_id)), None)
+#             if mod:
+#                 label = getattr(mod, f"label_{lf}", None) or mod.label_en
+#                 labels.append((mod.emoji or "") + " " + label)
+#     return ", ".join(labels)
 def build_modifier_label(item: OrderItemDB, lang: str) -> str:
     if not item.modifiers_json or not item.dish:
         return ""
+
     try:
         mods = json.loads(item.modifiers_json)
     except Exception:
         return ""
+
     lf = lang_field(lang)
     labels = []
-    for mg in item.dish.modifier_groups:
+
+    for link in item.dish.modifier_links:
+        mg = link.group
+
         mod_id = mods.get(str(mg.id))
         if mod_id:
-            mod = next((m for m in mg.modifiers if str(m.id) == str(mod_id)), None)
+            mod = next(
+                (m for m in mg.modifiers if str(m.id) == str(mod_id)),
+                None
+            )
+
             if mod:
                 label = getattr(mod, f"label_{lf}", None) or mod.label_en
                 labels.append((mod.emoji or "") + " " + label)
+
     return ", ".join(labels)
 
 
@@ -99,8 +128,16 @@ async def menu(
         CategoryDB.restaurant_id == restaurant_id
     ).order_by(CategoryDB.sort_order).all()
 
+    # dishes = db.query(DishDB).options(
+    #     joinedload(DishDB.modifier_links).joinedload(ModifierGroupDB.modifiers)
+    # ).filter(
+    #     DishDB.category_id.in_([c.id for c in categories]),
+    #     DishDB.active == True
+    # ).order_by(DishDB.sort_order).all()
     dishes = db.query(DishDB).options(
-        joinedload(DishDB.modifier_groups).joinedload(ModifierGroupDB.modifiers)
+        joinedload(DishDB.modifier_links)
+        .joinedload(DishModifierGroup.group)
+        .joinedload(ModifierGroupDB.modifiers)
     ).filter(
         DishDB.category_id.in_([c.id for c in categories]),
         DishDB.active == True
@@ -125,25 +162,55 @@ async def menu(
             "desc_cn": d.desc_cn, "desc_ru": d.desc_ru,
             "desc_th": d.desc_th, "desc_ko": d.desc_ko,
             "desc_fr": d.desc_fr, "desc_ar": d.desc_ar,
+            # "modifier_groups": [
+            #     {
+            #         "id": mg.id, "dish_id": mg.dish_id,
+            #         "name_en": mg.name_en, "name_lo": mg.name_lo,
+            #         "name_cn": mg.name_cn, "name_ru": mg.name_ru,
+            #         "name_th": mg.name_th, "name_ko": mg.name_ko,
+            #         "name_fr": mg.name_fr, "name_ar": mg.name_ar,
+            #         "required": mg.required,
+            #         "modifiers": [
+            #             {
+            #                 "id": m.id, "emoji": m.emoji,
+            #                 "label_en": m.label_en, "label_lo": m.label_lo,
+            #                 "label_cn": m.label_cn, "label_ru": m.label_ru,
+            #                 "label_th": m.label_th, "label_ko": m.label_ko,
+            #                 "label_fr": m.label_fr, "label_ar": m.label_ar,
+            #                 "price_add": m.price_add
+            #             } for m in mg.modifiers
+            #         ]
+            #     } for mg in d.modifier_groups
+            # ]
             "modifier_groups": [
                 {
-                    "id": mg.id, "dish_id": mg.dish_id,
-                    "name_en": mg.name_en, "name_lo": mg.name_lo,
-                    "name_cn": mg.name_cn, "name_ru": mg.name_ru,
-                    "name_th": mg.name_th, "name_ko": mg.name_ko,
-                    "name_fr": mg.name_fr, "name_ar": mg.name_ar,
-                    "required": mg.required,
+                    "id": link.group.id,
+                    "dish_id": d.id,
+                    "name_en": link.group.name_en,
+                    "name_lo": link.group.name_lo,
+                    "name_cn": link.group.name_cn,
+                    "name_ru": link.group.name_ru,
+                    "name_th": link.group.name_th,
+                    "name_ko": link.group.name_ko,
+                    "name_fr": link.group.name_fr,
+                    "name_ar": link.group.name_ar,
+                    "required": link.group.required,
                     "modifiers": [
                         {
-                            "id": m.id, "emoji": m.emoji,
-                            "label_en": m.label_en, "label_lo": m.label_lo,
-                            "label_cn": m.label_cn, "label_ru": m.label_ru,
-                            "label_th": m.label_th, "label_ko": m.label_ko,
-                            "label_fr": m.label_fr, "label_ar": m.label_ar,
+                            "id": m.id,
+                            "emoji": m.emoji,
+                            "label_en": m.label_en,
+                            "label_lo": m.label_lo,
+                            "label_cn": m.label_cn,
+                            "label_ru": m.label_ru,
+                            "label_th": m.label_th,
+                            "label_ko": m.label_ko,
+                            "label_fr": m.label_fr,
+                            "label_ar": m.label_ar,
                             "price_add": m.price_add
-                        } for m in mg.modifiers
+                        } for m in link.group.modifiers
                     ]
-                } for mg in d.modifier_groups
+                } for link in d.modifier_links
             ]
         }
 
@@ -227,10 +294,21 @@ async def create_order(
         # считаем price_add выбранных модификаторов
         mods = item_data.get("modifiers", {})
         price_add = 0
-        for mg in dish.modifier_groups:
+        # for mg in dish.modifier_groups:
+        #     mod_id = mods.get(str(mg.id))
+        #     if mod_id:
+        #         mod = next((m for m in mg.modifiers if str(m.id) == str(mod_id)), None)
+        #         if mod:
+        #             price_add += mod.price_add
+        for link in dish.modifier_links:
+            mg = link.group
+
             mod_id = mods.get(str(mg.id))
             if mod_id:
-                mod = next((m for m in mg.modifiers if str(m.id) == str(mod_id)), None)
+                mod = next(
+                    (m for m in mg.modifiers if str(m.id) == str(mod_id)),
+                    None
+                )
                 if mod:
                     price_add += mod.price_add
 
@@ -284,10 +362,19 @@ async def order_done(
         lang: str = "en",
         db: Session = Depends(get_db)
 ):
+    # order = db.query(OrderDB).options(
+    #     joinedload(OrderDB.items).joinedload(OrderItemDB.dish).joinedload(
+    #         DishDB.modifier_links).joinedload(ModifierGroupDB.modifiers)
+    # ).filter(OrderDB.id == order_id).first()
     order = db.query(OrderDB).options(
-        joinedload(OrderDB.items).joinedload(OrderItemDB.dish).joinedload(
-            DishDB.modifier_groups).joinedload(ModifierGroupDB.modifiers)
-    ).filter(OrderDB.id == order_id).first()
+        joinedload(OrderDB.items)
+        .joinedload(OrderItemDB.dish)
+        .joinedload(DishDB.modifier_links)
+        .joinedload(DishModifierGroup.group)
+        .joinedload(ModifierGroupDB.modifiers)
+    ).filter(
+        OrderDB.id == order_id
+    ).first()
 
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
@@ -385,9 +472,14 @@ async def order_status(order_id: int, db: Session = Depends(get_db)):
 @app.get("/api/admin/orders/{restaurant_id}")
 async def admin_get_orders(restaurant_id: int, db: Session = Depends(get_db)):
     orders = db.query(OrderDB).options(
-        joinedload(OrderDB.items).joinedload(OrderItemDB.dish).joinedload(
-            DishDB.modifier_groups).joinedload(ModifierGroupDB.modifiers),
-        joinedload(OrderDB.table)
+        # joinedload(OrderDB.items).joinedload(OrderItemDB.dish).joinedload(
+        #     DishDB.modifier_links).joinedload(ModifierGroupDB.modifiers),
+        joinedload(OrderDB.items)
+        .joinedload(OrderItemDB.dish)
+        .joinedload(DishDB.modifier_links)
+        .joinedload(DishModifierGroup.group)
+        .joinedload(ModifierGroupDB.modifiers),
+        joinedload(OrderDB.table),
     ).filter(
         OrderDB.restaurant_id == restaurant_id,
         OrderDB.status.notin_([OrderStatus.DONE, OrderStatus.CANCELLED])
@@ -545,8 +637,13 @@ async def admin_analytics(request: Request, db: Session = Depends(get_db)):
 
 
 @app.get("/admin/menu", response_class=HTMLResponse)
-async def admin_menu(db: Session = Depends(get_db)):
-    return HTMLResponse(content="<h1>Admin Menu (TODO)</h1>")
+async def admin_menu(request: Request, db: Session = Depends(get_db)):
+    restaurant = db.query(RestaurantDB).filter(RestaurantDB.id == 1).first()
+    return templates.TemplateResponse(
+        request=request,
+        name="admin/menu.html",
+        context={"restaurant": restaurant}
+    )
 
 
 # ─── Admin Actions ───
@@ -602,14 +699,181 @@ async def answer_waiter_call(call_id: int, db: Session = Depends(get_db)):
     return {"id": call.id, "answered_at": call.answered_at.isoformat()}
 
 
-@app.post("/admin/menu/toggle/{dish_id}")
-async def toggle_dish_active(dish_id: int, db: Session = Depends(get_db)):
+# ── GET menu data ──
+@app.get("/api/admin/menu/{restaurant_id}")
+async def get_menu(restaurant_id: int, db: Session = Depends(get_db)):
+    categories = db.query(CategoryDB).filter(
+        CategoryDB.restaurant_id == restaurant_id
+    ).order_by(CategoryDB.sort_order).all()
+
+    result = []
+    for cat in categories:
+        dishes = db.query(DishDB).filter(
+            DishDB.category_id == cat.id
+        ).order_by(DishDB.sort_order).all()
+        result.append({
+            "id": cat.id,
+            "name_en": cat.name_en,
+            "name_lo": cat.name_lo,
+            "dishes": [{
+                "id": d.id,
+                "name_en": d.name_en,
+                "name_lo": d.name_lo,
+                "price": d.price,
+                "discount_price": d.discount_price,
+                "photo_url": d.photo_url,
+                "active": d.active,
+                "is_available": d.is_available,
+                "is_new": d.is_new,
+                "is_surprise_eligible": d.is_surprise_eligible,
+                "dietary_tags": d.dietary_tags or [],
+                "allergens": d.allergens or [],
+                "category_id": d.category_id,
+            } for d in dishes]
+        })
+    return result
+
+
+# ── PATCH dish toggles ──
+@app.patch("/api/admin/dish/{dish_id}")
+async def update_dish(dish_id: int, request: Request, db: Session = Depends(get_db)):
+    data = await request.json()
     dish = db.query(DishDB).filter(DishDB.id == dish_id).first()
     if not dish:
-        raise HTTPException(status_code=404, detail="Dish not found")
-    dish.active = not dish.active
+        raise HTTPException(status_code=404, detail="Not found")
+    for key, val in data.items():
+        if hasattr(dish, key):
+            setattr(dish, key, val)
     db.commit()
-    return {"id": dish.id, "active": dish.active, "status": "available" if dish.active else "86"}
+    return {"ok": True}
+
+
+# ── POST new dish ──
+@app.post("/api/admin/dish")
+async def create_dish(request: Request, db: Session = Depends(get_db)):
+    data = await request.json()
+    dish = DishDB(**{k: v for k, v in data.items() if hasattr(DishDB, k)})
+    db.add(dish)
+    db.commit()
+    db.refresh(dish)
+    return {"id": dish.id}
+
+
+# ── DELETE dish ──
+@app.delete("/api/admin/dish/{dish_id}")
+async def delete_dish(dish_id: int, db: Session = Depends(get_db)):
+    dish = db.query(DishDB).filter(DishDB.id == dish_id).first()
+    if not dish:
+        raise HTTPException(status_code=404, detail="Not found")
+    db.delete(dish)
+    db.commit()
+    return {"ok": True}
+
+
+# ── POST new category ──
+@app.post("/api/admin/category")
+async def create_category(request: Request, db: Session = Depends(get_db)):
+    data = await request.json()
+    cat = CategoryDB(**{k: v for k, v in data.items() if hasattr(CategoryDB, k)})
+    db.add(cat)
+    db.commit()
+    db.refresh(cat)
+    return {"id": cat.id}
+
+
+# ── PATCH category ──
+@app.patch("/api/admin/category/{cat_id}")
+async def update_category(cat_id: int, request: Request, db: Session = Depends(get_db)):
+    data = await request.json()
+    cat = db.query(CategoryDB).filter(CategoryDB.id == cat_id).first()
+    if not cat:
+        raise HTTPException(status_code=404, detail="Not found")
+    for key, val in data.items():
+        if hasattr(cat, key):
+            setattr(cat, key, val)
+    db.commit()
+    return {"ok": True}
+
+
+# ── DELETE category ──
+@app.delete("/api/admin/category/{cat_id}")
+async def delete_category(cat_id: int, db: Session = Depends(get_db)):
+    cat = db.query(CategoryDB).filter(CategoryDB.id == cat_id).first()
+    if not cat:
+        raise HTTPException(status_code=404, detail="Not found")
+    db.delete(cat)
+    db.commit()
+    return {"ok": True}
+
+
+# ── GET all modifier groups for restaurant ──
+@app.get("/api/admin/modifier-groups/{restaurant_id}")
+async def get_modifier_groups(restaurant_id: int, db: Session = Depends(get_db)):
+    groups = db.query(ModifierGroupDB).filter(
+        ModifierGroupDB.restaurant_id == restaurant_id
+    ).all()
+    return [{
+        "id": g.id,
+        "name_en": g.name_en,
+        "name_lo": g.name_lo,
+        "required": g.required,
+        "modifiers": [{"id": m.id, "label_en": m.label_en, "emoji": m.emoji, "price_add": m.price_add} for m in
+                      g.modifiers]
+    } for g in groups]
+
+
+# ── GET modifiers linked to dish ──
+@app.get("/api/admin/dish/{dish_id}/modifiers")
+async def get_dish_modifiers(dish_id: int, db: Session = Depends(get_db)):
+    links = db.query(DishModifierGroup).filter(DishModifierGroup.dish_id == dish_id).all()
+    return [link.group_id for link in links]
+
+
+# ── SET modifiers for dish (replace all) ──
+@app.post("/api/admin/dish/{dish_id}/modifiers")
+async def set_dish_modifiers(dish_id: int, request: Request, db: Session = Depends(get_db)):
+    data = await request.json()
+    group_ids = data.get("group_ids", [])
+    db.query(DishModifierGroup).filter(DishModifierGroup.dish_id == dish_id).delete()
+    for i, gid in enumerate(group_ids):
+        db.add(DishModifierGroup(dish_id=dish_id, group_id=gid, sort_order=i))
+    db.commit()
+    return {"ok": True}
+
+
+# ── POST new modifier group ──
+@app.post("/api/admin/modifier-group")
+async def create_modifier_group(request: Request, db: Session = Depends(get_db)):
+    data = await request.json()
+    g = ModifierGroupDB(**{k: v for k, v in data.items() if hasattr(ModifierGroupDB, k)})
+    db.add(g)
+    db.commit()
+    db.refresh(g)
+    return {"id": g.id}
+
+
+@app.post("/api/admin/upload-photo")
+async def upload_photo(file: UploadFile = File(...)):
+    ext = file.filename.split(".")[-1].lower()
+    if ext not in ["jpg", "jpeg", "png", "webp"]:
+        raise HTTPException(status_code=400, detail="Invalid file type")
+    filename = f"{uuid.uuid4().hex}.{ext}"
+    path = f"static/img/{filename}"
+    with open(path, "wb") as f:
+        shutil.copyfileobj(file.file, f)
+    return {"url": f"/static/img/{filename}"}
+
+
+@app.get("/api/admin/dish/{dish_id}/modifiers")
+async def get_dish_modifiers(dish_id: int, db: Session = Depends(get_db)):
+    groups = db.query(ModifierGroupDB).filter(ModifierGroupDB.dish_id == dish_id).all()
+    return [{
+        "id": g.id,
+        "name_en": g.name_en,
+        "required": g.required,
+        "modifiers": [{"id": m.id, "label_en": m.label_en, "emoji": m.emoji, "price_add": m.price_add} for m in
+                      g.modifiers]
+    } for g in groups]
 
 
 @app.post("/api/request-bill/{order_id}")

@@ -31,6 +31,7 @@ class RestaurantDB(Base):
     categories = relationship("CategoryDB", back_populates="restaurant")
     orders = relationship("OrderDB", back_populates="restaurant")
     waiter_calls = relationship("WaiterCallDB", back_populates="restaurant")
+    modifier_groups = relationship("ModifierGroupDB", back_populates="restaurant")
 
 
 class TableDB(Base):
@@ -110,7 +111,7 @@ class DishDB(Base):
     allergens = Column(JSON, default=list)  # ["gluten", "nuts", ...]
 
     category = relationship("CategoryDB", back_populates="dishes")
-    modifier_groups = relationship("ModifierGroupDB", back_populates="dish")
+    modifier_links = relationship("DishModifierGroup", back_populates="dish")
     order_items = relationship("OrderItemDB", back_populates="dish")
 
 
@@ -118,7 +119,7 @@ class ModifierGroupDB(Base):
     __tablename__ = "modifier_groups"
 
     id = Column(Integer, primary_key=True, index=True)
-    dish_id = Column(Integer, ForeignKey("dishes.id"), index=True)
+    restaurant_id = Column(Integer, ForeignKey("restaurants.id"), index=True)
     name_en = Column(String)
     name_lo = Column(String)
     name_cn = Column(String)
@@ -129,8 +130,21 @@ class ModifierGroupDB(Base):
     name_ar = Column(String)
     required = Column(Boolean, default=False)
 
-    dish = relationship("DishDB", back_populates="modifier_groups")
+    restaurant = relationship("RestaurantDB", back_populates="modifier_groups")
     modifiers = relationship("ModifierDB", back_populates="group")
+    dish_links = relationship("DishModifierGroup", back_populates="group")
+
+
+class DishModifierGroup(Base):
+    __tablename__ = "dish_modifier_groups"
+
+    id = Column(Integer, primary_key=True, index=True)
+    dish_id = Column(Integer, ForeignKey("dishes.id"), index=True)
+    group_id = Column(Integer, ForeignKey("modifier_groups.id"), index=True)
+    sort_order = Column(Integer, default=0)
+
+    dish = relationship("DishDB", back_populates="modifier_links")
+    group = relationship("ModifierGroupDB", back_populates="dish_links")
 
 
 class ModifierDB(Base):

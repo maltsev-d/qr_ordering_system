@@ -150,7 +150,7 @@ class Modifier(ModifierBase):
 # ─── ModifierGroup ───
 
 class ModifierGroupBase(BaseModel):
-    dish_id: int
+    restaurant_id: int
     name_en: str
     name_lo: str
     name_cn: str
@@ -169,6 +169,25 @@ class ModifierGroupCreate(ModifierGroupBase):
 class ModifierGroup(ModifierGroupBase):
     id: int
     modifiers: List[Modifier] = []
+
+    class Config:
+        from_attributes = True
+
+
+# --- DishModifierGroup ---
+
+class DishModifierGroupBase(BaseModel):
+    dish_id: int
+    group_id: int
+    sort_order: int = 0
+
+
+class DishModifierGroupCreate(DishModifierGroupBase):
+    pass
+
+
+class DishModifierGroupSchema(DishModifierGroupBase):
+    id: int
 
     class Config:
         from_attributes = True
@@ -224,7 +243,7 @@ class DishCreate(DishBase):
 
 class Dish(DishBase):
     id: int
-    modifier_groups: List[ModifierGroup] = []
+    modifier_links: List[DishModifierGroupSchema] = []
 
     class Config:
         from_attributes = True
