@@ -1,8 +1,8 @@
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 
 from dotenv import load_dotenv
-from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, Integer, String, Text, create_engine
+from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, Integer, JSON, String, Text, create_engine
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 
 from db.models import OrderStatus, OrderType
@@ -17,6 +17,7 @@ Base = declarative_base()
 
 
 # ─── ORM Models ───
+
 class RestaurantDB(Base):
     __tablename__ = "restaurants"
 
@@ -24,6 +25,7 @@ class RestaurantDB(Base):
     name = Column(String, index=True)
     logo_url = Column(String, nullable=True)
     wifi_password = Column(String, nullable=True)
+    payment_qr_url = Column(String, nullable=True)
 
     tables = relationship("TableDB", back_populates="restaurant")
     categories = relationship("CategoryDB", back_populates="restaurant")
@@ -69,7 +71,14 @@ class DishDB(Base):
     id = Column(Integer, primary_key=True, index=True)
     category_id = Column(Integer, ForeignKey("categories.id"), index=True)
     sort_order = Column(Integer, default=0)
-    active = Column(Boolean, default=True, index=True)
+
+    # availability
+    active = Column(Boolean, default=True, index=True)  # блюдо существует в меню
+    is_available = Column(Boolean, default=True, index=True)  # блюдо доступно сейчас (стоп-лист)
+    is_new = Column(Boolean, default=False)  # бейдж NEW
+    is_surprise_eligible = Column(Boolean, default=False)
+
+    # names
     name_en = Column(String)
     name_lo = Column(String)
     name_cn = Column(String)
@@ -78,6 +87,8 @@ class DishDB(Base):
     name_ko = Column(String)
     name_fr = Column(String)
     name_ar = Column(String)
+
+    # descriptions
     desc_en = Column(Text)
     desc_lo = Column(Text)
     desc_cn = Column(Text)
@@ -86,9 +97,17 @@ class DishDB(Base):
     desc_ko = Column(Text)
     desc_fr = Column(Text)
     desc_ar = Column(Text)
+
+    # pricing
     price = Column(Integer)
+    discount_price = Column(Integer, nullable=True)  # None = нет скидки
+
+    # media
     photo_url = Column(String, nullable=True)
-    is_surprise_eligible = Column(Boolean, default=False)
+
+    # tags (JSON-массивы, значения из DIETARY_TAGS / ALLERGENS)
+    dietary_tags = Column(JSON, default=list)  # ["veg", "no_pork", ...]
+    allergens = Column(JSON, default=list)  # ["gluten", "nuts", ...]
 
     category = relationship("CategoryDB", back_populates="dishes")
     modifier_groups = relationship("ModifierGroupDB", back_populates="dish")
@@ -128,7 +147,7 @@ class ModifierDB(Base):
     label_fr = Column(String)
     label_ar = Column(String)
     emoji = Column(String, nullable=True)
-    price_add = Column(Integer, default=0)
+    price_add = Column(Integer, default=0)  # 0 = бесплатно
 
     group = relationship("ModifierGroupDB", back_populates="modifiers")
 
@@ -141,8 +160,9 @@ class OrderDB(Base):
     table_id = Column(Integer, ForeignKey("tables.id"), index=True)
     order_type = Column(Enum(OrderType), default=OrderType.DINE_IN)
     status = Column(Enum(OrderStatus), default=OrderStatus.NEW, index=True)
-    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     total = Column(Integer)
+    comment = Column(Text, nullable=True)  # комментарий гостя
 
     restaurant = relationship("RestaurantDB", back_populates="orders")
     table = relationship("TableDB", back_populates="orders")
@@ -156,8 +176,8 @@ class OrderItemDB(Base):
     order_id = Column(Integer, ForeignKey("orders.id"), index=True)
     dish_id = Column(Integer, ForeignKey("dishes.id"), index=True)
     qty = Column(Integer)
-    modifiers_json = Column(Text, nullable=True)
-    subtotal = Column(Integer)
+    modifiers_json = Column(Text, nullable=True)  # {"group_id": modifier_id, ...}
+    subtotal = Column(Integer)  # уже с учётом price_add и qty
 
     order = relationship("OrderDB", back_populates="items")
     dish = relationship("DishDB", back_populates="order_items")
@@ -169,7 +189,7 @@ class WaiterCallDB(Base):
     id = Column(Integer, primary_key=True, index=True)
     restaurant_id = Column(Integer, ForeignKey("restaurants.id"), index=True)
     table_id = Column(Integer, ForeignKey("tables.id"), index=True)
-    called_at = Column(DateTime, default=datetime.utcnow, index=True)
+    called_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     answered_at = Column(DateTime, nullable=True)
 
     restaurant = relationship("RestaurantDB", back_populates="waiter_calls")
@@ -177,13 +197,18 @@ class WaiterCallDB(Base):
 
 
 # ─── Init ───
+
 def create_tables():
-    """Создаёт все таблицы"""
+    Base.metadata.create_all(bind=engine)
+
+
+def drop_and_recreate():
+    """Пересоздать все таблицы. Все данные удаляются."""
+    Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
 
 
 def get_db():
-    """Dependency для FastAPI"""
     db = SessionLocal()
     try:
         yield db

@@ -6,6 +6,133 @@
     <title>{{ restaurant.name }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/css/flag-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <script>
+        const RESTAURANT_ID = {{ restaurant.id }}
+        const TABLE_ID = {{ table.id }}
+        const LANG = "{{ lang or '' }}";
+        const CATEGORIES = {{ categories_json | safe }}
+        const DISHES = {{ dishes_json | safe }}
+
+        const CAT_META = {
+            "Soups": {emoji: "🍲", imgClass: "cat-soups"},
+            "Rice & Noodles": {emoji: "🍚", imgClass: "cat-rice"},
+            "Grills": {emoji: "🔥", imgClass: "cat-grills"},
+            "Drinks": {emoji: "🥤", imgClass: "cat-drinks"},
+        };
+
+        const LANG_META = [
+            {code: "en", flag: "gb", name: "English", native: "English"},
+            {code: "zh", flag: "cn", name: "Chinese", native: "中文"},
+            {code: "th", flag: "th", name: "Thai", native: "ไทย"},
+            {code: "ru", flag: "ru", name: "Russian", native: "Русский"},
+            {code: "ko", flag: "kr", name: "Korean", native: "한국어"},
+            {code: "fr", flag: "fr", name: "French", native: "Français"},
+            {code: "lo", flag: "la", name: "Lao", native: "ລາວ"},
+            {code: "ar", flag: "sa", name: "Arabic", native: "العربية", rtl: true},
+        ];
+
+        const I18N = {
+            en: {
+                table: "Table", dine_in: "Dine-in", takeaway: "Takeaway",
+                surprise: "🎲 Surprise me!", view_order: "Check the order", all: "🍽️ All",
+                view_cart: "View cart 🛒", items_in_cart: "items in cart", item_in_cart: "item in cart",
+                popular_title: "Popular with this", popular_sub: "Others also ordered",
+                add_to_cart: "Add to cart", your_order: "🛒 Your order",
+                total: "Total", place_order: "Place order", back_to_menu: "← Back to menu",
+                call_waiter: "Call waiter", waiter_coming: "Waiter is on the way! 🔔",
+                waiter_wait: "Already called, wait a moment.", waiter_answered: "Waiter is coming ✓",
+                comment_placeholder: "Any notes for the kitchen?",
+            },
+            ru: {
+                table: "Стол", dine_in: "В зале", takeaway: "С собой",
+                surprise: "🎲 Удиви меня!", view_order: "Посмотреть зазказ", all: "🍽️ Все",
+                view_cart: "Корзина 🛒", items_in_cart: "блюд в корзине", item_in_cart: "блюдо в корзине",
+                popular_title: "Популярно с этим", popular_sub: "Другие тоже заказывали",
+                add_to_cart: "Добавить в корзину", your_order: "🛒 Ваш заказ",
+                total: "Итого", place_order: "Оформить заказ", back_to_menu: "← Назад в меню",
+                call_waiter: "Вызвать официанта", waiter_coming: "Официант уже идёт! 🔔",
+                waiter_wait: "Уже вызван, подождите.", waiter_answered: "Официант идёт ✓",
+                comment_placeholder: "Пожелания для кухни?",
+            },
+            lo: {
+                table: "ໂຕະ", dine_in: "ກິນຢູ່ຮ້ານ", takeaway: "ຊື້ກັບ",
+                surprise: "🎲 ແປກໃຈ!", all: "🍽️ ທັງໝົດ",
+                view_cart: "ເບິ່ງກະຕ່າ 🛒", items_in_cart: "ລາຍການໃນກະຕ່າ", item_in_cart: "ລາຍການໃນກະຕ່າ",
+                popular_title: "ນິຍົມກັບລາຍການນີ້", popular_sub: "ຄົນອື່ນກໍ່ສັ່ງ",
+                add_to_cart: "ເພີ່ມໃສ່ກະຕ່າ", your_order: "🛒 ຄໍາສັ່ງຂອງທ່ານ",
+                total: "ລວມ", place_order: "ສັ່ງອາຫານ", back_to_menu: "← ກັບໄປເມນູ",
+                call_waiter: "ເອີ້ນພະນັກງານ", waiter_coming: "ພະນັກງານກໍາລັງມາ! 🔔",
+                waiter_wait: "ເອີ້ນແລ້ວ, ລໍຖ້າ.", waiter_answered: "ພະນັກງານກໍາລັງມາ ✓",
+                comment_placeholder: "ຫມາຍເຫດສໍາລັບຄົວ?",
+            },
+            zh: {
+                table: "桌子", dine_in: "堂食", takeaway: "外带",
+                surprise: "🎲 随机推荐!", all: "🍽️ 全部",
+                view_cart: "查看购物车 🛒", items_in_cart: "件商品", item_in_cart: "件商品",
+                popular_title: "搭配推荐", popular_sub: "其他人也点了",
+                add_to_cart: "加入购物车", your_order: "🛒 您的订单",
+                total: "合计", place_order: "下单", back_to_menu: "← 返回菜单",
+                call_waiter: "呼叫服务员", waiter_coming: "服务员正在赶来! 🔔",
+                waiter_wait: "已呼叫，请稍候。", waiter_answered: "服务员正在来 ✓",
+                comment_placeholder: "给厨房的备注？",
+            },
+            th: {
+                table: "โต๊ะ", dine_in: "ทานที่ร้าน", takeaway: "ซื้อกลับบ้าน",
+                surprise: "🎲 สุ่มเมนู!", all: "🍽️ ทั้งหมด",
+                view_cart: "ดูตะกร้า 🛒", items_in_cart: "รายการในตะกร้า", item_in_cart: "รายการในตะกร้า",
+                popular_title: "นิยมสั่งคู่กัน", popular_sub: "คนอื่นก็สั่งด้วย",
+                add_to_cart: "เพิ่มในตะกร้า", your_order: "🛒 คำสั่งของคุณ",
+                total: "รวม", place_order: "สั่งอาหาร", back_to_menu: "← กลับเมนู",
+                call_waiter: "เรียกพนักงาน", waiter_coming: "พนักงานกำลังมา! 🔔",
+                waiter_wait: "เรียกแล้ว รอสักครู่", waiter_answered: "พนักงานกำลังมา ✓",
+                comment_placeholder: "หมายเหตุสำหรับครัว?",
+            },
+            ko: {
+                table: "테이블", dine_in: "매장 식사", takeaway: "포장",
+                surprise: "🎲 랜덤 추천!", all: "🍽️ 전체",
+                view_cart: "장바구니 🛒", items_in_cart: "개 항목", item_in_cart: "개 항목",
+                popular_title: "함께 주문하면 좋아요", popular_sub: "다른 분들도 주문했어요",
+                add_to_cart: "장바구니 추가", your_order: "🛒 주문 내역",
+                total: "합계", place_order: "주문하기", back_to_menu: "← 메뉴로 돌아가기",
+                call_waiter: "직원 호출", waiter_coming: "직원이 오고 있어요! 🔔",
+                waiter_wait: "이미 호출했습니다.", waiter_answered: "직원이 오는 중 ✓",
+                comment_placeholder: "주방에 메모?",
+            },
+            fr: {
+                table: "Table", dine_in: "Sur place", takeaway: "À emporter",
+                surprise: "🎲 Surprise!", all: "🍽️ Tout",
+                view_cart: "Voir panier 🛒", items_in_cart: "articles", item_in_cart: "article",
+                popular_title: "Populaire avec ça", popular_sub: "D'autres ont aussi commandé",
+                add_to_cart: "Ajouter au panier", your_order: "🛒 Votre commande",
+                total: "Total", place_order: "Commander", back_to_menu: "← Retour au menu",
+                call_waiter: "Appeler le serveur", waiter_coming: "Le serveur arrive! 🔔",
+                waiter_wait: "Déjà appelé, attendez.", waiter_answered: "Le serveur vient ✓",
+                comment_placeholder: "Note pour la cuisine?",
+            },
+            ar: {
+                table: "طاولة", dine_in: "تناول في المطعم", takeaway: "للأخذ",
+                surprise: "🎲 فاجئني!", all: "🍽️ الكل",
+                view_cart: "عرض السلة 🛒", items_in_cart: "عناصر في السلة", item_in_cart: "عنصر في السلة",
+                popular_title: "شائع مع هذا", popular_sub: "طلبه آخرون أيضاً",
+                add_to_cart: "أضف إلى السلة", your_order: "🛒 طلبك",
+                total: "المجموع", place_order: "تأكيد الطلب", back_to_menu: "→ العودة للقائمة",
+                call_waiter: "استدعاء النادل", waiter_coming: "النادل في الطريق! 🔔",
+                waiter_wait: "تم الاستدعاء، انتظر.", waiter_answered: "النادل قادم ✓",
+                comment_placeholder: "ملاحظة للمطبخ؟",
+            },
+        };
+
+        const DIETARY_LABELS = {
+            veg: "🌿 Veg", no_pork: "🐷 No Pork", no_gluten: "🌾 GF",
+            spicy: "🌶️ Spicy", halal: "☪️ Halal", seafood: "🦐 Seafood",
+        };
+        const ALLERGEN_LABELS = {
+            gluten: "🌾 Gluten", nuts: "🥜 Nuts", dairy: "🥛 Dairy",
+            eggs: "🥚 Eggs", shellfish: "🦞 Shellfish", soy: "🫘 Soy",
+        };
+    </script>
 
     <style>
         *, *::before, *::after {
@@ -36,1113 +163,218 @@
             overflow-x: hidden;
         }
 
-        ::-webkit-scrollbar {
-            display: none;
+        ::-webkit-scrollbar { display: none; }
+        * { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .lp-wrap { min-height: 100vh; display: flex; flex-direction: column; background: var(--bg); }
+        .lp-header { background: var(--primary); padding: 40px 24px 32px; text-align: center; }
+        .lp-logo { width: 64px; height: 64px; border-radius: 18px; margin: 0 auto 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .lp-logo img { width: 100%; height: 100%; object-fit: cover; }
+        .lp-name { color: #fff; font-size: 20px; font-weight: 700; line-height: 1.2; }
+        .lp-table { color: rgba(255,255,255,0.7); font-size: 12px; margin-top: 4px; }
+        .lp-body { flex: 1; padding: 28px 20px 32px; }
+        .lp-hint { text-align: center; font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 20px; }
+        .lp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .lp-btn { background: var(--surface); border: 1.5px solid var(--border); border-radius: 14px; padding: 14px 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; text-decoration: none; transition: border-color .15s, background .15s; -webkit-tap-highlight-color: transparent; }
+        .lp-btn:active { background: #FFF6F2; border-color: var(--primary); }
+        .lp-btn.rtl { flex-direction: row-reverse; }
+        .fi { border-radius: 4px; overflow: hidden; display: inline-block; flex-shrink: 0; }
+        .lp-btn-text .name { font-size: 12px; font-weight: 600; color: var(--text); line-height: 1.2; }
+        .lp-btn-text .native { font-size: 10px; color: var(--muted); }
+        .lp-btn.rtl .lp-btn-text { text-align: right; }
+        .lp-footer { text-align: center; font-size: 10px; color: var(--muted); padding: 0 20px 24px; }
+
+        .menu-wrap { min-height: 100vh; display: flex; flex-direction: column; }
+        .menu-header { background: var(--primary); padding: 12px 16px 16px; position: sticky; top: 0; z-index: 100; }
+        .mh-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .mh-info { display: flex; align-items: center; gap: 10px; }
+        .mh-logo { width: 36px; height: 36px; border-radius: 10px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .mh-logo img { width: 100%; height: 100%; object-fit: cover; }
+        .mh-name { color: #fff; font-size: 14px; font-weight: 700; line-height: 1.2; }
+        .mh-table { color: rgba(255,255,255,0.7); font-size: 10px; }
+
+        .lang-wrap { position: relative; }
+        .lang-pill { background: rgba(255,255,255,0.2); border: 1.5px solid rgba(255,255,255,0.35); border-radius: 20px; padding: 5px 10px; display: flex; align-items: center; gap: 6px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        .lang-pill span { color: #fff; font-size: 11px; font-weight: 700; }
+        .lang-pill .arr { opacity: 0.7; font-size: 9px; }
+        .lang-dropdown { position: absolute; top: calc(100% + 6px); right: 0; background: var(--surface); border-radius: 14px; border: 1.5px solid var(--border); box-shadow: 0 8px 24px rgba(0,0,0,0.12); min-width: 170px; z-index: 200; padding: 4px; overflow: hidden; }
+        .dd-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        .dd-item:hover, .dd-item.active { background: #FFF6F2; }
+        .dd-item .dd-name { font-size: 12px; font-weight: 600; color: var(--text); flex: 1; }
+        .dd-item .dd-check { color: var(--primary); font-size: 12px; }
+
+        .categories { display: flex; gap: 8px; overflow-x: auto; padding: 0 2px; }
+        .cat-btn { background: rgba(255,255,255,0.2); border: none; border-radius: 20px; padding: 6px 14px; font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.8); white-space: nowrap; cursor: pointer; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; transition: background .15s, color .15s; }
+        .cat-btn.active { background: #fff; color: var(--primary); }
+
+        .dishes-list { flex: 1; padding: 10px 12px; padding-bottom: 100px; }
+        .dish-card { background: var(--surface); border-radius: 14px; overflow: hidden; margin-bottom: 10px; display: flex; height: 110px; cursor: pointer; -webkit-tap-highlight-color: transparent; border: 1px solid var(--primary); position: relative; }
+        .dish-img { width: 120px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+        .dish-img img { width: 100%; height: 100%; object-fit: cover; }
+        .dish-img .no-photo { width: 100%; height: 100%; background: #E0E0E0; display: flex; align-items: center; justify-content: center; font-size: 28px; color: #bbb; }
+        .dish-img.cat-soups { background: #FFF0E8; }
+        .dish-img.cat-rice { background: #F0F8E8; }
+        .dish-img.cat-grills { background: #FFF5E0; }
+        .dish-img.cat-drinks { background: #E8F4FF; }
+        .dish-info { flex: 1; padding: 10px 12px 10px 10px; display: flex; flex-direction: column; justify-content: space-between; }
+        .dish-name { font-size: 12px; font-weight: 600; color: var(--text); line-height: 1.3; }
+        .dish-name-lo { font-size: 10px; color: var(--muted); margin-top: 1px; }
+        .dish-bottom { display: flex; justify-content: space-between; align-items: center; }
+        .dish-price { font-size: 13px; font-weight: 700; color: var(--primary); }
+
+        .badge-new { position: absolute; top: 6px; left: 6px; background: var(--accent); color: var(--text); font-size: 9px; font-weight: 800; padding: 2px 7px; border-radius: 6px; letter-spacing: 0.5px; text-transform: uppercase; pointer-events: none; z-index: 1; }
+        .detail-badge-new { top: 12px; left: 12px; font-size: 10px; padding: 3px 9px; }
+
+        .price-old { font-size: 11px; color: var(--muted); text-decoration: line-through; margin-right: 4px; font-weight: 500; }
+        .price-new { font-size: 13px; font-weight: 700; color: var(--primary); }
+
+        .add-btn { width: 26px; height: 26px; background: var(--primary); color: #fff; border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 500; line-height: 1; cursor: pointer; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; flex-shrink: 0; }
+
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 300; display: flex; align-items: flex-end; }
+        .detail-panel { background: var(--bg); border-radius: 22px 22px 0 0; width: 100%; max-height: 90vh; overflow-y: auto; padding-bottom: 24px; }
+        .detail-img { height: 220px; display: flex; align-items: center; justify-content: center; border-radius: 22px 22px 0 0; overflow: hidden; position: relative; }
+        .detail-img img { width: 100%; height: 100%; object-fit: cover; }
+        .detail-img .no-photo-big { width: 100%; height: 100%; background: #E0E0E0; display: flex; align-items: center; justify-content: center; font-size: 64px; }
+        .detail-close { position: absolute; top: 12px; right: 14px; width: 30px; height: 30px; background: rgba(0,0,0,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; cursor: pointer; border: none; }
+        .detail-body { background: var(--surface); border-radius: 18px 18px 0 0; margin-top: -14px; padding: 16px 16px 0; }
+        .detail-name { font-size: 17px; font-weight: 700; color: var(--text); line-height: 1.25; }
+        .detail-name-lo { font-size: 10px; color: var(--muted); margin-top: 3px; }
+        .detail-desc { font-size: 11px; color: #666; line-height: 1.6; margin-top: 8px; }
+        .detail-price-row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+        .detail-price { font-size: 20px; font-weight: 700; color: var(--primary); }
+        .detail-usd { font-size: 12px; color: var(--muted); }
+
+        .dietary-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px; }
+        .dtag { font-size: 9px; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: #E0F7F5; color: #2BADA4; }
+        .allergens { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+        .allergen-label { font-size: 10px; }
+        .atag { font-size: 9px; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: #FFF8E0; color: #CC8800; }
+
+        .mod-section { border-top: 1px solid var(--border); margin-top: 12px; padding-top: 12px; }
+        .mod-label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+        .mod-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+        .mpill { padding: 6px 12px; margin-bottom: 12px; border-radius: 20px; font-size: 10px; font-weight: 600; border: 1.5px solid var(--border); color: #888; cursor: pointer; background: var(--surface); font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; transition: all .15s; }
+        .mpill.selected-teal { background: #E0F7F5; border-color: var(--teal); color: #2BADA4; }
+        .mpill.selected-orange { background: #FFF0E8; border-color: var(--primary); color: var(--primary); }
+        .mod-price-add { font-size: 9px; color: #666; margin-left: 3px; font-weight: 500; }
+
+        .popular-section { padding: 14px 16px; border-top: 1px solid var(--border); margin-top: 4px; }
+        .popular-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+        .popular-dot { width: 12px; height: 3px; background: var(--teal); border-radius: 2px; }
+        .popular-title { font-size: 13px; font-weight: 700; color: var(--text); }
+        .popular-sub { font-size: 10px; color: var(--muted); margin-bottom: 10px; }
+        .popular-row { display: flex; gap: 8px; overflow-x: auto; }
+        .pop-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: 12px; padding: 8px; width: 80px; flex-shrink: 0; position: relative; cursor: pointer; }
+        .pop-img { width: 100%; height: 50px; border-radius: 8px; overflow: hidden; background: #E0E0E0; }
+        .pop-img img { width: 100%; height: 100%; object-fit: cover; }
+        .pop-name { font-size: 9px; font-weight: 600; color: var(--text); margin-top: 5px; line-height: 1.3; }
+        .pop-price { font-size: 9px; color: var(--primary); font-weight: 600; margin-top: 1px; }
+        .pop-plus { position: absolute; bottom: 6px; right: 6px; width: 18px; height: 18px; background: var(--teal); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; line-height: 1; }
+
+        .atc-btn { margin: 12px 16px 16px; background: var(--primary); color: #fff; border: none; border-radius: 12px; padding: 14px; width: calc(100% - 32px); font-size: 13px; font-weight: 700; font-family: 'Poppins', sans-serif; cursor: pointer; text-align: center; -webkit-tap-highlight-color: transparent; }
+
+        .cart-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; padding: 10px 12px 20px; background: linear-gradient(to top, var(--bg) 70%, transparent); z-index: 200; }
+        .cart-inner { background: var(--primary); border-radius: 14px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; }
+        .cart-left { color: #fff; }
+        .cart-count { font-size: 10px; opacity: 0.8; }
+        .cart-total { font-size: 16px; font-weight: 700; }
+        .cart-cta { background: #fff; color: var(--primary); border: none; border-radius: 9px; padding: 8px 14px; font-size: 11px; font-weight: 700; font-family: 'Poppins', sans-serif; cursor: pointer; }
+
+        .cart-panel { background: var(--bg); border-radius: 22px 22px 0 0; width: 100%; max-height: 85vh; overflow-y: auto; padding: 20px 16px; }
+        .cart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .cart-title { font-size: 17px; font-weight: 700; color: var(--text); }
+        .cart-back { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; font-size: 11px; font-weight: 600; color: var(--muted); cursor: pointer; font-family: 'Poppins', sans-serif; }
+        .cart-item { background: var(--surface); border-radius: 12px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: flex-start; }
+        .ci-name { font-size: 12px; font-weight: 600; color: var(--text); }
+        .ci-mod { font-size: 10px; color: var(--muted); margin-top: 2px; }
+        .ci-price { font-size: 13px; font-weight: 700; color: var(--primary); }
+        .ci-img { width: 52px; height: 52px; border-radius: 10px; overflow: hidden; flex-shrink: 0; margin-right: 10px; }
+        .ci-img img { width: 100%; height: 100%; object-fit: cover; }
+        .ci-no-photo { width: 100%; height: 100%; background: #E0E0E0; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .qty-ctrl { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+        .qty-btn { width: 24px; height: 24px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; cursor: pointer; color: var(--text); font-family: 'Poppins', sans-serif; }
+        .qty-num { font-size: 13px; font-weight: 600; color: var(--text); }
+
+        .cart-comment { margin: 8px 0; }
+        .comment-input { width: 100%; background: var(--surface); border: 1.5px solid var(--border); border-radius: 12px; padding: 10px 12px; font-size: 11px; font-family: 'Poppins', sans-serif; color: var(--text); resize: none; outline: none; transition: border-color .15s; }
+        .comment-input:focus { border-color: var(--primary); }
+        .comment-input::placeholder { color: var(--muted); }
+
+        .cart-total-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-top: 1px solid var(--border); margin-top: 8px; }
+        .ct-label { font-size: 13px; font-weight: 600; color: var(--text); }
+        .ct-total { font-size: 18px; font-weight: 700; color: var(--primary); }
+        .order-type-row { display: flex; gap: 8px; margin-bottom: 14px; }
+        .ot-btn { flex: 1; padding: 10px; border-radius: 10px; border: 1.5px solid var(--border); background: var(--surface); text-align: center; font-size: 11px; font-weight: 600; color: #888; cursor: pointer; font-family: 'Poppins', sans-serif; transition: all .15s; }
+        .ot-btn.active { border-color: var(--primary); background: #FFF6F2; color: var(--primary); }
+        .ot-btn .ot-emoji { font-size: 20px; display: block; margin-bottom: 4px; }
+        .checkout-btn { width: 100%; background: var(--primary); color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 13px; font-weight: 700; font-family: 'Poppins', sans-serif; cursor: pointer; margin-top: 4px; }
+        .checkout-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .waiter-btn { position: fixed; bottom: 86px; right: 16px; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 201; -webkit-tap-highlight-color: transparent; transition: transform .15s, background .2s; background: var(--surface); border: 1.5px solid var(--border); }
+        .waiter-btn.calling { background: #FFF0E8; border-color: var(--primary); }
+        .waiter-btn.answered { background: #E0F7F5; border-color: var(--teal); }
+        .waiter-btn:active { transform: scale(0.92); }
+        .waiter-toast { position: fixed; bottom: 146px; right: 12px; background: var(--text); color: #fff; font-size: 11px; font-weight: 600; padding: 8px 14px; border-radius: 10px; z-index: 202; white-space: nowrap; }
+
+        .surprise-btn { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 12px 12px 0; background: var(--surface); border: 1.5px dashed var(--teal); border-radius: 12px; padding: 10px; cursor: pointer; font-size: 11px; font-weight: 600; color: #2BADA4; -webkit-tap-highlight-color: transparent; width: calc(100% - 24px); }
+
+        .qty-ctrl-inline { display: flex; align-items: center; gap: 6px; }
+        .qty-btn-sm { width: 22px; height: 22px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text); font-family: 'Poppins', sans-serif; }
+        .qty-num-sm { font-size: 12px; font-weight: 700; color: var(--text); min-width: 14px; text-align: center; }
+
+        [x-cloak] { display: none !important; }
+
+        @media (prefers-reduced-motion: reduce) {
+            * { transition: none !important; animation: none !important; }
         }
 
-        * {
-            -ms-overflow-style: none;
+        .detail-share {
+            position: absolute;
+            top: 12px;
+            right: 48px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255,255,255,0.9);
+            font-size: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .diet-filters {
+            display: flex;
+            gap: 6px;
+            padding: 0 12px 10px;
+            overflow-x: auto;
             scrollbar-width: none;
         }
 
-        .lp-wrap {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            background: var(--bg);
-        }
-
-        .lp-header {
-            background: var(--primary);
-            padding: 40px 24px 32px;
-            text-align: center;
-        }
-
-        .lp-logo {
-            width: 64px;
-            height: 64px;
-            border-radius: 18px;
-            margin: 0 auto 12px;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .lp-logo img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .lp-name {
-            color: #fff;
-            font-size: 20px;
-            font-weight: 700;
-            line-height: 1.2;
-        }
-
-        .lp-table {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 12px;
-            margin-top: 4px;
-        }
-
-        .lp-body {
-            flex: 1;
-            padding: 28px 20px 32px;
-        }
-
-        .lp-hint {
-            text-align: center;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text);
-            margin-bottom: 20px;
-        }
-
-        .lp-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        .lp-btn {
-            background: var(--surface);
-            border: 1.5px solid var(--border);
-            border-radius: 14px;
-            padding: 14px 12px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-            text-decoration: none;
-            transition: border-color .15s, background .15s;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .lp-btn:active {
-            background: #FFF6F2;
-            border-color: var(--primary);
-        }
-
-        .lp-btn.rtl {
-            flex-direction: row-reverse;
-        }
-
-        .fi {
-            border-radius: 4px;
-            overflow: hidden;
-            display: inline-block;
-            flex-shrink: 0;
-        }
-
-        .lp-btn-text .name {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text);
-            line-height: 1.2;
-        }
-
-        .lp-btn-text .native {
-            font-size: 10px;
-            color: var(--muted);
-        }
-
-        .lp-btn.rtl .lp-btn-text {
-            text-align: right;
-        }
-
-        .lp-footer {
-            text-align: center;
-            font-size: 10px;
-            color: var(--muted);
-            padding: 0 20px 24px;
-        }
-
-        .menu-wrap {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .menu-header {
-            background: var(--primary);
-            padding: 12px 16px 16px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .mh-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .mh-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .mh-logo {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .mh-logo img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .mh-name {
-            color: #fff;
-            font-size: 14px;
-            font-weight: 700;
-            line-height: 1.2;
-        }
-
-        .mh-table {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 10px;
-        }
-
-        .lang-wrap {
-            position: relative;
-        }
-
-        .lang-pill {
-            background: rgba(255, 255, 255, 0.2);
-            border: 1.5px solid rgba(255, 255, 255, 0.35);
+        .diet-btn {
+            padding: 5px 12px;
             border-radius: 20px;
-            padding: 5px 10px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .lang-pill span {
-            color: #fff;
-            font-size: 11px;
-            font-weight: 700;
-        }
-
-        .lang-pill .arr {
-            opacity: 0.7;
-            font-size: 9px;
-        }
-
-        .lang-dropdown {
-            position: absolute;
-            top: calc(100% + 6px);
-            right: 0;
-            background: var(--surface);
-            border-radius: 14px;
             border: 1.5px solid var(--border);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-            min-width: 170px;
-            z-index: 200;
-            padding: 4px;
-            overflow: hidden;
-        }
-
-        .dd-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 9px 10px;
-            border-radius: 10px;
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .dd-item:hover, .dd-item.active {
-            background: #FFF6F2;
-        }
-
-        .dd-item .dd-name {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text);
-            flex: 1;
-        }
-
-        .dd-item .dd-check {
-            color: var(--primary);
-            font-size: 12px;
-        }
-
-        .categories {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            padding: 0 2px;
-        }
-
-        .cat-btn {
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            border-radius: 20px;
-            padding: 6px 14px;
+            background: var(--surface);
             font-size: 11px;
             font-weight: 600;
-            color: rgba(255, 255, 255, 0.8);
+            color: var(--muted);
+            cursor: pointer;
             white-space: nowrap;
-            cursor: pointer;
-            font-family: 'Poppins', sans-serif;
-            -webkit-tap-highlight-color: transparent;
-            transition: background .15s, color .15s;
-        }
-
-        .cat-btn.active {
-            background: #fff;
-            color: var(--primary);
-        }
-
-        .dishes-list {
-            flex: 1;
-            padding: 10px 12px;
-            padding-bottom: 100px;
-        }
-
-        .dish-card {
-            background: var(--surface);
-            border-radius: 14px;
-            overflow: hidden;
-            margin-bottom: 10px;
-            display: flex;
-            height: 110px;
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
-            border: 1px solid var(--primary);
-
-
-        }
-
-        .dish-card:active {
-            border-color: var(--primary);
-        }
-
-        .dish-img {
-            width: 120px;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        .dish-img img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .dish-img .no-photo {
-            width: 100%;
-            height: 100%;
-            background: #E0E0E0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            color: #bbb;
-        }
-
-        .dish-img.cat-soups {
-            background: #FFF0E8;
-        }
-
-        .dish-img.cat-rice {
-            background: #F0F8E8;
-        }
-
-        .dish-img.cat-grills {
-            background: #FFF5E0;
-        }
-
-        .dish-img.cat-drinks {
-            background: #E8F4FF;
-        }
-
-        .dish-info {
-            flex: 1;
-            padding: 10px 12px 10px 10px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .dish-name {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text);
-            line-height: 1.3;
-        }
-
-        .dish-name-lo {
-            font-size: 10px;
-            color: var(--muted);
-            margin-top: 1px;
-        }
-
-        .dish-tags {
-            display: flex;
-            gap: 4px;
-            margin-top: 4px;
-            flex-wrap: wrap;
-        }
-
-        .tag {
-            font-size: 9px;
-            padding: 2px 7px;
-            border-radius: 6px;
-            font-weight: 500;
-        }
-
-        .tag-spicy {
-            background: #FFF0E8;
-            color: var(--primary);
-        }
-
-        .tag-teal {
-            background: #E0F7F5;
-            color: #2BADA4;
-        }
-
-        .dish-bottom {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .dish-price {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        .add-btn {
-            width: 26px;
-            height: 26px;
-            background: var(--primary);
-            color: #fff;
-            border: none;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            font-weight: 500;
-            line-height: 1;
-            cursor: pointer;
-            font-family: 'Poppins', sans-serif;
-            -webkit-tap-highlight-color: transparent;
-            flex-shrink: 0;
-        }
-
-        .overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.45);
-            z-index: 300;
-            display: flex;
-            align-items: flex-end;
-        }
-
-        .detail-panel {
-            background: var(--bg);
-            border-radius: 22px 22px 0 0;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            padding-bottom: 24px;
-        }
-
-        .detail-img {
-            height: 220px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 22px 22px 0 0;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .detail-img img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .detail-img .no-photo-big {
-            width: 100%;
-            height: 100%;
-            background: #E0E0E0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 64px;
-        }
-
-        .detail-close {
-            position: absolute;
-            top: 12px;
-            right: 14px;
-            width: 30px;
-            height: 30px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-size: 16px;
-            cursor: pointer;
-            border: none;
-        }
-
-        .detail-body {
-            background: var(--surface);
-            border-radius: 18px 18px 0 0;
-            margin-top: -14px;
-            padding: 16px 16px 0;
-        }
-
-        .detail-name {
-            font-size: 17px;
-            font-weight: 700;
-            color: var(--text);
-            line-height: 1.25;
-        }
-
-        .detail-name-lo {
-            font-size: 10px;
-            color: var(--muted);
-            margin-top: 3px;
-        }
-
-        .detail-desc {
-            font-size: 11px;
-            color: #666;
-            line-height: 1.6;
-            margin-top: 8px;
-        }
-
-        .detail-price-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 10px;
-        }
-
-        .detail-price {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        .detail-usd {
-            font-size: 12px;
-            color: var(--muted);
-        }
-
-        .mod-section {
-            border-top: 1px solid var(--border);
-            margin-top: 12px;
-            padding-top: 12px;
-        }
-
-        .mod-label {
-            font-size: 10px;
-            font-weight: 700;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 8px;
-        }
-
-        .mod-pills {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
-
-        .mpill {
-            padding: 6px 12px;
-            margin-bottom: 12px;
-            border-radius: 20px;
-            font-size: 10px;
-            font-weight: 600;
-            border: 1.5px solid var(--border);
-            color: #888;
-            cursor: pointer;
-            background: var(--surface);
-            font-family: 'Poppins', sans-serif;
-            -webkit-tap-highlight-color: transparent;
-            transition: all .15s;
-        }
-
-        .mpill.selected-teal {
-            background: #E0F7F5;
-            border-color: var(--teal);
-            color: #2BADA4;
-        }
-
-        .mpill.selected-orange {
-            background: #FFF0E8;
-            border-color: var(--primary);
-            color: var(--primary);
-        }
-
-        .popular-section {
-            padding: 14px 16px;
-            border-top: 1px solid var(--border);
-            margin-top: 4px;
-        }
-
-        .popular-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 4px;
-        }
-
-        .popular-dot {
-            width: 12px;
-            height: 3px;
-            background: var(--teal);
-            border-radius: 2px;
-        }
-
-        .popular-title {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--text);
-        }
-
-        .popular-sub {
-            font-size: 10px;
-            color: var(--muted);
-            margin-bottom: 10px;
-        }
-
-        .popular-row {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-        }
-
-        .pop-card {
-            background: var(--surface);
-            border: 1.5px solid var(--border);
-            border-radius: 12px;
-            padding: 8px;
-            width: 80px;
-            flex-shrink: 0;
-            position: relative;
-            cursor: pointer;
-        }
-
-        .pop-img {
-            width: 100%;
-            height: 50px;
-            border-radius: 8px;
-            overflow: hidden;
-            background: #E0E0E0;
-        }
-
-        .pop-img img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .pop-img .pop-no-photo {
-            width: 100%;
-            height: 100%;
-            background: #E0E0E0;
-        }
-
-        .pop-name {
-            font-size: 9px;
-            font-weight: 600;
-            color: var(--text);
-            margin-top: 5px;
-            line-height: 1.3;
-        }
-
-        .pop-price {
-            font-size: 9px;
-            color: var(--primary);
-            font-weight: 600;
-            margin-top: 1px;
-        }
-
-        .pop-plus {
-            position: absolute;
-            bottom: 6px;
-            right: 6px;
-            width: 18px;
-            height: 18px;
-            background: var(--teal);
-            color: #fff;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-            font-weight: 700;
-            line-height: 1;
-        }
-
-        .atc-btn {
-            margin: 12px 16px 16px;
-            background: var(--primary);
-            color: #fff;
-            border: none;
-            border-radius: 12px;
-            padding: 14px;
-            width: calc(100% - 32px);
-            font-size: 13px;
-            font-weight: 700;
-            font-family: 'Poppins', sans-serif;
-            cursor: pointer;
-            text-align: center;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .cart-bar {
-            position: fixed;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 480px;
-            padding: 10px 12px 20px;
-            background: linear-gradient(to top, var(--bg) 70%, transparent);
-            z-index: 200;
-        }
-
-        .cart-inner {
-            background: var(--primary);
-            border-radius: 14px;
-            padding: 12px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .cart-left {
-            color: #fff;
-        }
-
-        .cart-count {
-            font-size: 10px;
-            opacity: 0.8;
-        }
-
-        .cart-total {
-            font-size: 16px;
-            font-weight: 700;
-        }
-
-        .cart-cta {
-            background: #fff;
-            color: var(--primary);
-            border: none;
-            border-radius: 9px;
-            padding: 8px 14px;
-            font-size: 11px;
-            font-weight: 700;
-            font-family: 'Poppins', sans-serif;
-            cursor: pointer;
-        }
-
-        .cart-panel {
-            background: var(--bg);
-            border-radius: 22px 22px 0 0;
-            width: 100%;
-            max-height: 85vh;
-            overflow-y: auto;
-            padding: 20px 16px;
-        }
-
-        .cart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .cart-title {
-            font-size: 17px;
-            font-weight: 700;
-            color: var(--text);
-        }
-
-        .cart-back {
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 6px 12px;
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--muted);
-            cursor: pointer;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        .cart-item {
-            background: var(--surface);
-            border-radius: 12px;
-            padding: 12px;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            align-items: flex-start;
-        }
-
-        .ci-name {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text);
-        }
-
-        .ci-mod {
-            font-size: 10px;
-            color: var(--muted);
-            margin-top: 2px;
-        }
-
-        .ci-price {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        .ci-img {
-            width: 52px;
-            height: 52px;
-            border-radius: 10px;
-            overflow: hidden;
-            flex-shrink: 0;
-            margin-right: 10px;
-        }
-
-        .ci-img img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .ci-no-photo {
-            width: 100%;
-            height: 100%;
-            background: #E0E0E0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-        }
-
-        .qty-ctrl {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 6px;
-        }
-
-        .qty-btn {
-            width: 24px;
-            height: 24px;
-            background: var(--bg);
-            border: 1.5px solid var(--border);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            color: var(--text);
-            font-family: 'Poppins', sans-serif;
-        }
-
-        .qty-num {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text);
-        }
-
-        .cart-total-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 14px 0;
-            border-top: 1px solid var(--border);
-            margin-top: 8px;
-        }
-
-        .ct-label {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text);
-        }
-
-        .ct-total {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        .order-type-row {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 14px;
-        }
-
-        .ot-btn {
-            flex: 1;
-            padding: 10px;
-            border-radius: 10px;
-            border: 1.5px solid var(--border);
-            background: var(--surface);
-            text-align: center;
-            font-size: 11px;
-            font-weight: 600;
-            color: #888;
-            cursor: pointer;
             font-family: 'Poppins', sans-serif;
             transition: all .15s;
         }
 
-        .ot-btn.active {
-            border-color: var(--primary);
-            background: #FFF6F2;
-            color: var(--primary);
-        }
-
-        .ot-btn .ot-emoji {
-            font-size: 20px;
-            display: block;
-            margin-bottom: 4px;
-        }
-
-        .checkout-btn {
-            width: 100%;
+        .diet-btn.active {
             background: var(--primary);
-            color: #fff;
-            border: none;
-            border-radius: 12px;
-            padding: 14px;
-            font-size: 13px;
-            font-weight: 700;
-            font-family: 'Poppins', sans-serif;
-            cursor: pointer;
-            margin-top: 4px;
-        }
-
-        .waiter-btn {
-            position: fixed;
-            bottom: 86px;
-            right: 16px;
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            z-index: 201;
-            -webkit-tap-highlight-color: transparent;
-            transition: transform .15s, background .2s;
-            background: var(--surface);
-            border: 1.5px solid var(--border);
-        }
-
-        .waiter-btn.calling {
-            background: #FFF0E8;
             border-color: var(--primary);
-        }
-
-        .waiter-btn.answered {
-            background: #E0F7F5;
-            border-color: var(--teal);
-        }
-
-        .waiter-btn:active {
-            transform: scale(0.92);
-        }
-
-        .waiter-toast {
-            position: fixed;
-            bottom: 146px;
-            right: 12px;
-            background: var(--text);
             color: #fff;
-            font-size: 11px;
-            font-weight: 600;
-            padding: 8px 14px;
-            border-radius: 10px;
-            z-index: 202;
-            white-space: nowrap;
         }
 
-        .surprise-btn {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-top: 12px;
-            margin-right: 12px;
-            margin-left: 12px;
-            background: var(--surface);
-            border: 1.5px dashed var(--teal);
-            border-radius: 12px;
-            padding: 10px 135px 10px;
-            cursor: pointer;
-            font-size: 11px;
-            font-weight: 600;
-            color: #2BADA4;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        [x-cloak] {
-            display: none !important;
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            * {
-                transition: none !important;
-                animation: none !important;
-            }
-        }
     </style>
 </head>
 <body>
-
-<script>
-    const RESTAURANT_ID = {{ restaurant.id }}
-    const TABLE_ID = {{ table.id }}
-    const LANG = "{{ lang or '' }}";
-    const CATEGORIES = {{ categories_json | safe }}
-    const DISHES = {{ dishes_json | safe }}
-
-
-    const CAT_META = {
-        "Soups": {emoji: "🍲", imgClass: "cat-soups"},
-        "Rice & Noodles": {emoji: "🍚", imgClass: "cat-rice"},
-        "Grills": {emoji: "🔥", imgClass: "cat-grills"},
-        "Drinks": {emoji: "🥤", imgClass: "cat-drinks"},
-    };
-
-    const LANG_META = [
-        {code: "en", flag: "gb", name: "English", native: "English"},
-        {code: "zh", flag: "cn", name: "Chinese", native: "中文"},
-        {code: "th", flag: "th", name: "Thai", native: "ไทย"},
-        {code: "ru", flag: "ru", name: "Russian", native: "Русский"},
-        {code: "ko", flag: "kr", name: "Korean", native: "한국어"},
-        {code: "fr", flag: "fr", name: "French", native: "Français"},
-        {code: "lo", flag: "la", name: "Lao", native: "ລາວ"},
-        {code: "ar", flag: "sa", name: "Arabic", native: "العربية", rtl: true},
-    ];
-
-    const I18N = {
-        en: {
-            table: "Table", dine_in: "Dine-in", takeaway: "Takeaway",
-            surprise: "🎲 Surprise me!", all: "🍽️ All",
-            view_cart: "View cart 🛒", items_in_cart: "items in cart", item_in_cart: "item in cart",
-            popular_title: "Popular with this", popular_sub: "Others also ordered",
-            add_to_cart: "Add to cart", your_order: "🛒 Your order",
-            total: "Total", place_order: "Place order", back_to_menu: "← Back to menu",
-            call_waiter: "Call waiter", waiter_coming: "Waiter is on the way! 🔔",
-            waiter_wait: "Already called, wait a moment.", waiter_answered: "Waiter is coming ✓",
-        },
-        ru: {
-            table: "Стол", dine_in: "В зале", takeaway: "С собой",
-            surprise: "🎲 Удиви меня!", all: "🍽️ Все",
-            view_cart: "Корзина 🛒", items_in_cart: "блюд в корзине", item_in_cart: "блюдо в корзине",
-            popular_title: "Популярно с этим", popular_sub: "Другие тоже заказывали",
-            add_to_cart: "Добавить в корзину", your_order: "🛒 Ваш заказ",
-            total: "Итого", place_order: "Оформить заказ", back_to_menu: "← Назад в меню",
-            call_waiter: "Вызвать официанта", waiter_coming: "Официант уже идёт! 🔔",
-            waiter_wait: "Уже вызван, подождите.", waiter_answered: "Официант идёт ✓",
-        },
-        lo: {
-            table: "ໂຕະ", dine_in: "ກິນຢູ່ຮ້ານ", takeaway: "ຊື້ກັບ",
-            surprise: "🎲 ແປກໃຈ!", all: "🍽️ ທັງໝົດ",
-            view_cart: "ເບິ່ງກະຕ່າ 🛒", items_in_cart: "ລາຍການໃນກະຕ່າ", item_in_cart: "ລາຍການໃນກະຕ່າ",
-            popular_title: "ນິຍົມກັບລາຍການນີ້", popular_sub: "ຄົນອື່ນກໍ່ສັ່ງ",
-            add_to_cart: "ເພີ່ມໃສ່ກະຕ່າ", your_order: "🛒 ຄໍາສັ່ງຂອງທ່ານ",
-            total: "ລວມ", place_order: "ສັ່ງອາຫານ", back_to_menu: "← ກັບໄປເມນູ",
-            call_waiter: "ເອີ້ນພະນັກງານ", waiter_coming: "ພະນັກງານກໍາລັງມາ! 🔔",
-            waiter_wait: "ເອີ້ນແລ້ວ, ລໍຖ້າ.", waiter_answered: "ພະນັກງານກໍາລັງມາ ✓",
-        },
-        zh: {
-            table: "桌子", dine_in: "堂食", takeaway: "外带",
-            surprise: "🎲 随机推荐!", all: "🍽️ 全部",
-            view_cart: "查看购物车 🛒", items_in_cart: "件商品", item_in_cart: "件商品",
-            popular_title: "搭配推荐", popular_sub: "其他人也点了",
-            add_to_cart: "加入购物车", your_order: "🛒 您的订单",
-            total: "合计", place_order: "下单", back_to_menu: "← 返回菜单",
-            call_waiter: "呼叫服务员", waiter_coming: "服务员正在赶来! 🔔",
-            waiter_wait: "已呼叫，请稍候。", waiter_answered: "服务员正在来 ✓",
-        },
-        th: {
-            table: "โต๊ะ", dine_in: "ทานที่ร้าน", takeaway: "ซื้อกลับบ้าน",
-            surprise: "🎲 สุ่มเมนู!", all: "🍽️ ทั้งหมด",
-            view_cart: "ดูตะกร้า 🛒", items_in_cart: "รายการในตะกร้า", item_in_cart: "รายการในตะกร้า",
-            popular_title: "นิยมสั่งคู่กัน", popular_sub: "คนอื่นก็สั่งด้วย",
-            add_to_cart: "เพิ่มในตะกร้า", your_order: "🛒 คำสั่งของคุณ",
-            total: "รวม", place_order: "สั่งอาหาร", back_to_menu: "← กลับเมนู",
-            call_waiter: "เรียกพนักงาน", waiter_coming: "พนักงานกำลังมา! 🔔",
-            waiter_wait: "เรียกแล้ว รอสักครู่", waiter_answered: "พนักงานกำลังมา ✓",
-        },
-        ko: {
-            table: "테이블", dine_in: "매장 식사", takeaway: "포장",
-            surprise: "🎲 랜덤 추천!", all: "🍽️ 전체",
-            view_cart: "장바구니 🛒", items_in_cart: "개 항목", item_in_cart: "개 항목",
-            popular_title: "함께 주문하면 좋아요", popular_sub: "다른 분들도 주문했어요",
-            add_to_cart: "장바구니 추가", your_order: "🛒 주문 내역",
-            total: "합계", place_order: "주문하기", back_to_menu: "← 메뉴로 돌아가기",
-            call_waiter: "직원 호출", waiter_coming: "직원이 오고 있어요! 🔔",
-            waiter_wait: "이미 호출했습니다.", waiter_answered: "직원이 오는 중 ✓",
-        },
-        fr: {
-            table: "Table", dine_in: "Sur place", takeaway: "À emporter",
-            surprise: "🎲 Surprise!", all: "🍽️ Tout",
-            view_cart: "Voir panier 🛒", items_in_cart: "articles", item_in_cart: "article",
-            popular_title: "Populaire avec ça", popular_sub: "D'autres ont aussi commandé",
-            add_to_cart: "Ajouter au panier", your_order: "🛒 Votre commande",
-            total: "Total", place_order: "Commander", back_to_menu: "← Retour au menu",
-            call_waiter: "Appeler le serveur", waiter_coming: "Le serveur arrive! 🔔",
-            waiter_wait: "Déjà appelé, attendez.", waiter_answered: "Le serveur vient ✓",
-        },
-        ar: {
-            table: "طاولة", dine_in: "تناول في المطعم", takeaway: "للأخذ",
-            surprise: "🎲 فاجئني!", all: "🍽️ الكل",
-            view_cart: "عرض السلة 🛒", items_in_cart: "عناصر في السلة", item_in_cart: "عنصر في السلة",
-            popular_title: "شائع مع هذا", popular_sub: "طلبه آخرون أيضاً",
-            add_to_cart: "أضف إلى السلة", your_order: "🛒 طلبك",
-            total: "المجموع", place_order: "تأكيد الطلب", back_to_menu: "→ العودة للقائمة",
-            call_waiter: "استدعاء النادل", waiter_coming: "النادل في الطريق! 🔔",
-            waiter_wait: "تم الاستدعاء، انتظر.", waiter_answered: "النادل قادم ✓",
-        },
-    };
-</script>
 
 <div x-data="menuApp()" x-init="init()" x-cloak>
 
@@ -1161,9 +393,9 @@
                 <div class="lp-grid">
                     <template x-for="l in langMeta" :key="l.code">
                         <a
-                                :href="`/menu/${RESTAURANT_ID}/${TABLE_ID}?lang=${l.code}`"
-                                class="lp-btn"
-                                :class="l.rtl ? 'rtl' : ''"
+                            :href="`/menu/${RESTAURANT_ID}/${TABLE_ID}?lang=${l.code}`"
+                            class="lp-btn"
+                            :class="l.rtl ? 'rtl' : ''"
                         >
                             <span class="fi" :class="`fi-${l.flag}`" style="width:28px;height:19px"></span>
                             <div class="lp-btn-text">
@@ -1217,40 +449,88 @@
                 </div>
 
                 <div class="categories">
-                    <button class="cat-btn" :class="activeCatId === null ? 'active' : ''" @click="activeCatId = null"
-                            x-text="t.all"></button>
+                    <button class="cat-btn" :class="activeCatId === null ? 'active' : ''"
+                            @click="activeCatId = null" x-text="t.all"></button>
                     <template x-for="cat in categories" :key="cat.id">
                         <button
-                                class="cat-btn"
-                                :class="activeCatId === cat.id ? 'active' : ''"
-                                @click="activeCatId = cat.id"
-                                x-text="(catMeta[cat.name_en]?.emoji || '') + ' ' + cat['name_' + langField]"
+                            class="cat-btn"
+                            :class="activeCatId === cat.id ? 'active' : ''"
+                            @click="activeCatId = cat.id"
+                            x-text="(catMeta[cat.name_en]?.emoji || '') + ' ' + (cat['name_' + langField] || cat.name_en)"
                         ></button>
                     </template>
                 </div>
+<!--                <div class="diet-filters">-->
+<!--                    <template x-for="tag in availableDietTags" :key="tag">-->
+<!--                        <button class="diet-btn" :class="activeDietTags.includes(tag) ? 'active' : ''"-->
+<!--                                @click="toggleDietTag(tag)"-->
+<!--                                x-text="dietaryLabel(tag)"></button>-->
+<!--                    </template>-->
+<!--                </div>-->
             </div>
 
-            <button class="surprise-btn" @click="openSurprise()" x-text="t.surprise"></button>
+            <div x-show="activeOrderId" x-cloak
+                 style="background:#2D9B6B;color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                <span style="font-size:13px;font-weight:600;">🧾 You have an active order</span>
+                <a :href="`/order-done/${activeOrderId}?lang=${lang}`"
+                   style="background:#fff;color:#2D9B6B;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">
+                    View →
+                </a>
+            </div>
+            <template x-if="activeOrderId">
+                <a :href="`/order-done/${activeOrderId}?lang=${lang}`" class="surprise-btn" style="text-decoration:none;" x-text="t.view_order"></a>
+            </template>
+            <template x-if="!activeOrderId">
+                <button class="surprise-btn" @click="openSurprise()" x-text="t.surprise"></button>
+            </template>
 
             <div class="dishes-list">
                 <template x-for="dish in activeDishes" :key="dish.id">
                     <div class="dish-card" @click="openDish(dish)">
                         <div class="dish-img" :class="catMeta[categoryName(dish)]?.imgClass || ''">
                             <template x-if="dish.photo_url">
-                                <img :src="dish.photo_url" :alt="dish['name_' + langField]" loading="lazy">
+                                <img :src="dish.photo_url" :alt="nameOf(dish)" loading="lazy">
                             </template>
                             <template x-if="!dish.photo_url">
                                 <div class="no-photo">🍽️</div>
                             </template>
+                            <div class="badge-new" x-show="dish.is_new">NEW</div>
                         </div>
                         <div class="dish-info">
                             <div>
-                                <div class="dish-name" x-text="dish['name_' + langField]"></div>
+                                <div class="dish-name" x-text="nameOf(dish)"></div>
                                 <div class="dish-name-lo" x-text="dish.name_lo" x-show="lang !== 'lo'"></div>
                             </div>
+                            <div class="dish-tags" x-show="dish.dietary_tags?.length || dish.allergens?.length">
+                                <template x-for="tag in (dish.dietary_tags || [])" :key="tag">
+                                    <span class="tag dtag" x-text="dietaryLabel(tag)"></span>
+                                </template>
+                                <template x-for="a in (dish.allergens || [])" :key="a">
+                                    <span class="tag atag" x-text="allergenLabel(a)"></span>
+                                </template>
+                            </div>
                             <div class="dish-bottom">
-                                <div class="dish-price" x-text="formatPrice(dish.price)"></div>
-                                <button class="add-btn" @click.stop="quickAdd(dish)">+</button>
+                                <div class="dish-price">
+                                    <template x-if="dish.discount_price">
+                                        <span>
+                                            <span class="price-old" x-text="formatPrice(dish.price)"></span>
+                                            <span class="price-new" x-text="formatPrice(dish.discount_price)"></span>
+                                        </span>
+                                    </template>
+                                    <template x-if="!dish.discount_price">
+                                        <span x-text="formatPrice(dish.price)"></span>
+                                    </template>
+                                </div>
+                                <template x-if="cartQty(dish.id) > 0">
+                                    <div class="qty-ctrl-inline" @click.stop>
+                                        <button class="qty-btn-sm" @click.stop="decreaseByDishId(dish.id)">−</button>
+                                        <span class="qty-num-sm" x-text="cartQty(dish.id)"></span>
+                                        <button class="qty-btn-sm" @click.stop="quickAdd(dish)">+</button>
+                                    </div>
+                                </template>
+                                <template x-if="cartQty(dish.id) === 0">
+                                    <button class="add-btn" @click.stop="quickAdd(dish)">+</button>
+                                </template>
                             </div>
                         </div>
                     </div>
@@ -1269,10 +549,10 @@
             </div>
 
             <div
-                    class="waiter-btn"
-                    :class="waiterState === 'calling' ? 'calling' : waiterState === 'answered' ? 'answered' : ''"
-                    @click="callWaiter()"
-                    :title="t.call_waiter"
+                class="waiter-btn"
+                :class="waiterState === 'calling' ? 'calling' : waiterState === 'answered' ? 'answered' : ''"
+                @click="callWaiter()"
+                :title="t.call_waiter"
             >
                 <span x-text="waiterState === 'calling' ? '⏳' : waiterState === 'answered' ? '✓' : '🔔'"></span>
             </div>
@@ -1288,61 +568,91 @@
                 <div>
                     <div class="detail-img" :class="catMeta[categoryName(selectedDish)]?.imgClass || ''">
                         <template x-if="selectedDish.photo_url">
-                            <img :src="selectedDish.photo_url" :alt="selectedDish['name_' + langField]">
+                            <img :src="selectedDish.photo_url" :alt="nameOf(selectedDish)">
                         </template>
                         <template x-if="!selectedDish.photo_url">
                             <div class="no-photo-big">🍽️</div>
                         </template>
                         <button class="detail-close" @click="selectedDish = null">✕</button>
+                        <button class="detail-share" @click="shareDish(selectedDish)" x-show="canShare">
+                            <i class="bi bi-share"></i>
+                        </button>
+                        <div class="badge-new detail-badge-new" x-show="selectedDish.is_new">NEW</div>
                     </div>
 
                     <div class="detail-body">
-                        <div class="detail-name" x-text="selectedDish['name_' + langField]"></div>
+                        <div class="detail-name" x-text="nameOf(selectedDish)"></div>
                         <div class="detail-name-lo" x-text="selectedDish.name_lo" x-show="lang !== 'lo'"></div>
-                        <div class="detail-desc" x-text="selectedDish['desc_' + langField]"></div>
+                        <div class="detail-desc" x-text="descOf(selectedDish)"></div>
+
                         <div class="detail-price-row">
-                            <div class="detail-price" x-text="formatPrice(selectedDish.price)"></div>
-                            <div class="detail-usd" x-text="'~$' + (selectedDish.price / 22500).toFixed(2)"></div>
+                            <template x-if="selectedDish.discount_price">
+                                <div>
+                                    <span class="price-old" x-text="formatPrice(selectedDish.price)"></span>
+                                    <span class="detail-price" x-text="formatPrice(selectedDish.discount_price)"></span>
+                                </div>
+                            </template>
+                            <template x-if="!selectedDish.discount_price">
+                                <div class="detail-price" x-text="formatPrice(selectedDish.price)"></div>
+                            </template>
+                            <div class="detail-usd" x-text="'~$' + ((selectedDish.discount_price || selectedDish.price) / 22500).toFixed(2)"></div>
+                        </div>
+
+                        <div class="dietary-tags" x-show="selectedDish.dietary_tags?.length">
+                            <template x-for="tag in (selectedDish.dietary_tags || [])" :key="tag">
+                                <span class="dtag" x-text="dietaryLabel(tag)"></span>
+                            </template>
+                        </div>
+
+                        <div class="allergens" x-show="selectedDish.allergens?.length">
+                            <span class="allergen-label">⚠️</span>
+                            <template x-for="a in (selectedDish.allergens || [])" :key="a">
+                                <span class="atag" x-text="allergenLabel(a)"></span>
+                            </template>
                         </div>
 
                         <template x-for="mg in selectedDish.modifier_groups" :key="mg.id">
                             <div class="mod-section">
-                                <div class="mod-label" x-text="mg['name_' + langField]"></div>
+                                <div class="mod-label" x-text="mg['name_' + langField] || mg.name_en"></div>
                                 <div class="mod-pills">
                                     <template x-for="mod in mg.modifiers" :key="mod.id">
                                         <button
-                                                class="mpill"
-                                                :class="selectedMods[mg.id] === mod.id
-                        ? (mod.label_en === 'No spice' || mod.label_en === 'Mild' ? 'selected-teal' : 'selected-orange')
-                        : ''"
-                                                @click="selectMod(mg.id, mod.id)"
-                                                x-text="(mod.emoji || '') + ' ' + mod['label_' + langField]"
-                                        ></button>
+                                            class="mpill"
+                                            :class="selectedMods[mg.id] === mod.id
+                                                ? (mod.label_en === 'No spice' || mod.label_en === 'Mild' ? 'selected-teal' : 'selected-orange')
+                                                : ''"
+                                            @click="selectMod(mg.id, mod.id)"
+                                        >
+                                            <span x-text="(mod.emoji || '') + ' ' + (mod['label_' + langField] || mod.label_en)"></span>
+                                            <template x-if="mod.price_add > 0">
+                                                <span class="mod-price-add" x-text="'+' + formatPrice(mod.price_add)"></span>
+                                            </template>
+                                        </button>
                                     </template>
                                 </div>
                             </div>
                         </template>
                     </div>
 
-                    <div class="popular-section" x-show="popularDishes.length > 0">
+                    <div class="popular-section" x-show="popular.length > 0">
                         <div class="popular-header">
                             <div class="popular-dot"></div>
                             <div class="popular-title" x-text="t.popular_title"></div>
                         </div>
                         <div class="popular-sub" x-text="t.popular_sub"></div>
                         <div class="popular-row">
-                            <template x-for="pd in popularDishes" :key="pd.id">
+                            <template x-for="pd in popular" :key="pd.id">
                                 <div class="pop-card" @click="openDish(pd)">
                                     <div class="pop-img">
                                         <template x-if="pd.photo_url">
-                                            <img :src="pd.photo_url" :alt="pd['name_' + langField]" loading="lazy">
+                                            <img :src="pd.photo_url" :alt="nameOf(pd)" loading="lazy">
                                         </template>
                                         <template x-if="!pd.photo_url">
                                             <div class="pop-no-photo"></div>
                                         </template>
                                     </div>
-                                    <div class="pop-name" x-text="pd['name_' + langField]"></div>
-                                    <div class="pop-price" x-text="formatPrice(pd.price)"></div>
+                                    <div class="pop-name" x-text="nameOf(pd)"></div>
+                                    <div class="pop-price" x-text="formatPrice(pd.discount_price || pd.price)"></div>
                                     <div class="pop-plus">+</div>
                                 </div>
                             </template>
@@ -1350,7 +660,8 @@
                     </div>
 
                     <button class="atc-btn" @click="addToCart(selectedDish)">
-                        <span x-text="t.add_to_cart"></span> · <span x-text="formatPrice(selectedDish.price)"></span>
+                        <span x-text="t.add_to_cart"></span> ·
+                        <span x-text="formatPrice(currentDishPrice())"></span>
                     </button>
                 </div>
             </template>
@@ -1369,24 +680,33 @@
                 <div class="cart-item">
                     <div class="ci-img">
                         <template x-if="item.dish.photo_url">
-                            <img :src="item.dish.photo_url" :alt="item.dish['name_' + langField]">
+                            <img :src="item.dish.photo_url" :alt="nameOf(item.dish)">
                         </template>
                         <template x-if="!item.dish.photo_url">
                             <div class="ci-no-photo">🍽️</div>
                         </template>
                     </div>
                     <div style="flex:1">
-                        <div class="ci-name" x-text="item.dish['name_' + langField]"></div>
-                        <div class="ci-mod" x-text="item.modLabel"></div>
+                        <div class="ci-name" x-text="nameOf(item.dish)"></div>
+                        <div class="ci-mod" x-text="item.modLabel" x-show="item.modLabel"></div>
                         <div class="qty-ctrl">
                             <button class="qty-btn" @click="decreaseQty(idx)">−</button>
                             <span class="qty-num" x-text="item.qty"></span>
                             <button class="qty-btn" @click="item.qty++">+</button>
                         </div>
                     </div>
-                    <div class="ci-price" x-text="formatPrice(item.dish.price * item.qty)"></div>
+                    <div class="ci-price" x-text="formatPrice(item.unitPrice * item.qty)"></div>
                 </div>
             </template>
+
+            <div class="cart-comment">
+                <textarea
+                    class="comment-input"
+                    x-model="comment"
+                    :placeholder="t.comment_placeholder"
+                    rows="2"
+                ></textarea>
+            </div>
 
             <div class="cart-total-row">
                 <span class="ct-label" x-text="t.total"></span>
@@ -1394,7 +714,8 @@
             </div>
 
             <div class="order-type-row">
-                <button class="ot-btn" :class="orderType === 'dine_in' ? 'active' : ''" @click="orderType = 'dine_in'">
+                <button class="ot-btn" :class="orderType === 'dine_in' ? 'active' : ''"
+                        @click="orderType = 'dine_in'">
                     <span class="ot-emoji">🍽️</span>
                     <span x-text="t.dine_in"></span>
                 </button>
@@ -1405,7 +726,7 @@
                 </button>
             </div>
 
-            <button class="checkout-btn" @click="submitOrder()">
+            <button class="checkout-btn" :disabled="submitting" @click="submitOrder()">
                 <span x-text="t.place_order"></span> · <span x-text="formatPrice(cartTotal)"></span>
             </button>
         </div>
@@ -1425,49 +746,61 @@
             activeCatId: null,
             selectedDish: null,
             selectedMods: {},
+            popular: [],
 
+            activeOrderId: null,
             cart: [],
             cartOpen: false,
             orderType: 'dine_in',
+            comment: '',
+            submitting: false,
+            canShare: !!navigator.share,
 
             langOpen: false,
             waiterToast: false,
             waiterMsg: '',
-            waiterState: 'idle', // idle | calling | answered
+            waiterState: 'idle',
             waiterCallId: null,
             waiterPollInterval: null,
+            activeDietTags: [],
 
             init() {
                 if (this.lang) {
                     document.documentElement.lang = this.lang;
                     document.documentElement.dir = this.lang === 'ar' ? 'rtl' : 'ltr';
                 }
+                const saved = localStorage.getItem(`cart:${RESTAURANT_ID}:${TABLE_ID}`);
+                if (saved) {
+                    try { this.cart = JSON.parse(saved); } catch {}
+                }
+                this.$watch('cart', val => {
+                    localStorage.setItem(`cart:${RESTAURANT_ID}:${TABLE_ID}`, JSON.stringify(val));
+                });
+                const activeOrder = localStorage.getItem(`active_order:${RESTAURANT_ID}:${TABLE_ID}`);
+
+                if (activeOrder) {
+                    this.activeOrderId = activeOrder;
+                }
             },
 
             get langField() {
-                const map = {en: 'en', zh: 'cn', th: 'th', ru: 'ru', ko: 'ko', fr: 'fr', lo: 'lo', ar: 'ar'};
+                const map = {en:'en', zh:'cn', th:'th', ru:'ru', ko:'ko', fr:'fr', lo:'lo', ar:'ar'};
                 return map[this.lang] || 'en';
             },
 
-            get t() {
-                return I18N[this.lang] || I18N['en'];
-            },
+            get t() { return I18N[this.lang] || I18N['en']; },
 
             get currentLang() {
                 return this.langMeta.find(l => l.code === this.lang) || this.langMeta[0];
             },
 
-            get activeDishes() {
-                if (!this.activeCatId) return this.dishes.filter(d => d.active);
-                return this.dishes.filter(d => d.category_id === this.activeCatId && d.active);
-            },
-
-            get popularDishes() {
-                if (!this.selectedDish) return [];
-                return this.dishes
-                    .filter(d => d.id !== this.selectedDish.id && d.active)
-                    .sort(() => Math.random() - 0.5)
-                    .slice(0, 3);
+           get activeDishes() {
+                let base = this.dishes.filter(d => d.active && d.is_available);
+                if (this.activeCatId !== null) base = base.filter(d => d.category_id === this.activeCatId);
+                if (this.activeDietTags.length) base = base.filter(d =>
+                    this.activeDietTags.every(t => (d.dietary_tags || []).includes(t))
+                );
+                return base;
             },
 
             get cartCount() {
@@ -1475,30 +808,59 @@
             },
 
             get cartTotal() {
-                return this.cart.reduce((sum, item) => sum + item.dish.price * item.qty, 0);
+                return this.cart.reduce((sum, item) => sum + item.unitPrice * item.qty, 0);
             },
 
             get orderTypeLabel() {
                 return this.orderType === 'dine_in' ? this.t.dine_in : this.t.takeaway;
             },
 
+            nameOf(dish) {
+                return dish['name_' + this.langField] || dish.name_en || '';
+            },
+
+            descOf(dish) {
+                return dish['desc_' + this.langField] || dish.desc_en || '';
+            },
+
+            dietaryLabel(tag) { return DIETARY_LABELS[tag] || tag; },
+            allergenLabel(a)  { return ALLERGEN_LABELS[a] || a; },
+
             categoryName(dish) {
                 const cat = this.categories.find(c => c.id === dish.category_id);
                 return cat?.name_en || '';
             },
 
-            hasSpicy(dish) {
-                return dish.modifier_groups?.some(mg =>
-                    mg.modifiers?.some(m => m.label_en?.includes('Hot') || m.label_en?.includes('Fire'))
-                );
+            get availableDietTags() {
+                const tags = new Set();
+                this.dishes.forEach(d => (d.dietary_tags || []).forEach(t => tags.add(t)));
+                return [...tags];
             },
 
-            isGlutenFree(dish) {
-                return dish.name_en === 'Sticky Rice';
+            toggleDietTag(tag) {
+                if (this.activeDietTags.includes(tag)) {
+                    this.activeDietTags = this.activeDietTags.filter(t => t !== tag);
+                } else {
+                    this.activeDietTags = [...this.activeDietTags, tag];
+                }
+            },
+
+            currentDishPrice() {
+                if (!this.selectedDish) return 0;
+                const base = this.selectedDish.discount_price || this.selectedDish.price;
+                let add = 0;
+                (this.selectedDish.modifier_groups || []).forEach(mg => {
+                    const modId = this.selectedMods[mg.id];
+                    if (modId) {
+                        const mod = mg.modifiers.find(m => m.id === modId);
+                        if (mod) add += mod.price_add || 0;
+                    }
+                });
+                return base + add;
             },
 
             formatPrice(val) {
-                return val.toLocaleString() + ' ₭';
+                return Number(val).toLocaleString() + ' ₭';
             },
 
             switchLang(code) {
@@ -1508,11 +870,11 @@
             openDish(dish) {
                 this.selectedDish = dish;
                 this.selectedMods = {};
-                dish.modifier_groups?.forEach(mg => {
-                    if (mg.modifiers?.length) {
-                        this.selectedMods[mg.id] = mg.modifiers[0].id;
-                    }
-                });
+                this.selectedMods = {};
+                this.popular = this.dishes
+                    .filter(d => d.id !== dish.id && d.active && d.is_available)
+                    .sort(() => Math.random() - 0.5)
+                    .slice(0, 3);
             },
 
             selectMod(groupId, modId) {
@@ -1520,19 +882,47 @@
             },
 
             quickAdd(dish) {
-                this.openDish(dish);
+                if (dish.modifier_groups?.length) {
+                    this.openDish(dish);
+                    return;
+                }
+                this.selectedMods = {};
                 this.addToCart(dish);
+            },
+
+            shareDish(dish) {
+                navigator.share({
+                    title: this.nameOf(dish),
+                    text: this.descOf(dish) || this.nameOf(dish),
+                    url: window.location.href
+                }).catch(() => {});
             },
 
             addToCart(dish) {
                 const modLabel = this.buildModLabel(dish);
-                const existing = this.cart.find(i => i.dish.id === dish.id && i.modLabel === modLabel);
+                const unitPrice = (dish.discount_price || dish.price) + this.calcPriceAdd(dish);
+
+                const existing = this.cart.find(
+                    i => i.dish.id === dish.id && i.modLabel === modLabel
+                );
                 if (existing) {
                     existing.qty++;
                 } else {
-                    this.cart.push({dish, qty: 1, mods: {...this.selectedMods}, modLabel});
+                    this.cart = [...this.cart, {dish, qty: 1, mods: {...this.selectedMods}, modLabel, unitPrice}];
                 }
                 this.selectedDish = null;
+            },
+
+            calcPriceAdd(dish) {
+                let add = 0;
+                (dish.modifier_groups || []).forEach(mg => {
+                    const modId = this.selectedMods[mg.id];
+                    if (modId) {
+                        const mod = mg.modifiers.find(m => m.id === modId);
+                        if (mod) add += mod.price_add || 0;
+                    }
+                });
+                return add;
             },
 
             buildModLabel(dish) {
@@ -1542,7 +932,7 @@
                     const modId = this.selectedMods[mg.id];
                     if (modId) {
                         const mod = mg.modifiers.find(m => m.id === modId);
-                        if (mod) parts.push((mod.emoji || '') + ' ' + mod['label_' + this.langField]);
+                        if (mod) parts.push((mod.emoji || '') + ' ' + (mod['label_' + this.langField] || mod.label_en));
                     }
                 });
                 return parts.join(', ');
@@ -1552,12 +942,24 @@
                 if (this.cart[idx].qty > 1) {
                     this.cart[idx].qty--;
                 } else {
-                    this.cart.splice(idx, 1);
+                    this.cart = this.cart.filter((_, i) => i !== idx);
                 }
             },
 
+            cartQty(dishId) {
+                return this.cart.filter(i => i.dish.id === dishId).reduce((s, i) => s + i.qty, 0);
+            },
+
+            decreaseByDishId(dishId) {
+                let idx = -1;
+                for (let i = this.cart.length - 1; i >= 0; i--) {
+                    if (this.cart[i].dish.id === dishId) { idx = i; break; }
+                }
+                if (idx !== -1) this.decreaseQty(idx);
+            },
+
             openSurprise() {
-                const eligible = this.dishes.filter(d => d.is_surprise_eligible && d.active);
+                const eligible = this.dishes.filter(d => d.is_surprise_eligible && d.active && d.is_available);
                 if (!eligible.length) return;
                 const dish = eligible[Math.floor(Math.random() * eligible.length)];
                 this.activeCatId = dish.category_id;
@@ -1585,9 +987,7 @@
                     this.waiterMsg = 'Error. Try again.';
                 }
                 this.waiterToast = true;
-                setTimeout(() => {
-                    this.waiterToast = false;
-                }, 3000);
+                setTimeout(() => { this.waiterToast = false; }, 3000);
             },
 
             startWaiterPoll() {
@@ -1601,23 +1001,21 @@
                             this.waiterState = 'answered';
                             this.waiterMsg = this.t.waiter_answered;
                             this.waiterToast = true;
-                            setTimeout(() => {
-                                this.waiterToast = false;
-                            }, 3000);
+                            setTimeout(() => { this.waiterToast = false; }, 3000);
                             clearInterval(this.waiterPollInterval);
-                            // Через 10 сек вернуть кнопку в исходное состояние
                             setTimeout(() => {
                                 this.waiterState = 'idle';
                                 this.waiterCallId = null;
                             }, 10000);
                         }
-                    } catch {
-                    }
+                    } catch {}
                 }, 5000);
             },
 
             async submitOrder() {
-                if (!this.cart.length) return;
+                if (!this.cart.length || this.submitting) return;
+                this.submitting = true;
+
                 const items = this.cart.map(item => ({
                     dish_id: item.dish.id,
                     qty: item.qty,
@@ -1633,6 +1031,7 @@
                     table_id: TABLE_ID,
                     order_type: this.orderType,
                     items: JSON.stringify(items),
+                    comment: this.comment || '',
                     lang: this.lang || 'en'
                 };
 
@@ -1644,12 +1043,14 @@
                     form.appendChild(input);
                 });
 
+                localStorage.removeItem(`cart:${RESTAURANT_ID}:${TABLE_ID}`);
                 document.body.appendChild(form);
                 form.submit();
             }
         };
     }
 </script>
+
 <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>
 </html>

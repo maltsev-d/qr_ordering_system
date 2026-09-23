@@ -22,3 +22,5 @@ env
 # Tests
 test_image.py
 test_image.html
+qrmenu.db
+seed.py

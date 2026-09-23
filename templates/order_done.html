@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>{{ restaurant.name }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <style>
         *, *::before, *::after {
@@ -154,6 +155,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+
         }
 
         .total-label {
@@ -167,6 +169,29 @@
             font-weight: 700;
             color: var(--primary);
         }
+
+        .order-comment {
+            padding: 12px 16px 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--text);
+            border-top: 1px solid var(--border);
+        }
+
+        .comment-text {
+            padding: 6px 16px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        .oc-comment { font-size: 11px;  margin-top: 6px;  }
 
         .info-card {
             background: var(--surface);
@@ -375,6 +400,97 @@
             margin-bottom: 24px;
             cursor: pointer;
         }
+
+        .bill-btn {
+            width: 100%;
+            padding: 14px;
+            background: #2D9B6B;
+            color: #fff;
+            border: none;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 700;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            margin-bottom: 12px;
+        }
+
+        .bill-card {
+            background: #fff;
+            border-radius: 16px;
+            border: 2px solid #FFB020;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .bill-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #999;
+            margin-bottom: 8px;
+        }
+
+        .bill-amount {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin-bottom: 16px;
+        }
+
+        .bill-qr {
+            width: 180px;
+            height: 180px;
+            object-fit: contain;
+            border-radius: 10px;
+            margin-bottom: 12px;
+        }
+
+        .bill-hint {
+            font-size: 11px;
+            color: #999;
+        }
+
+        .thankyou-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 32px 20px;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .ty-emoji {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .ty-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin-bottom: 6px;
+        }
+
+        .ty-sub {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .cancel-guest-btn {
+            width: 100%;
+            padding: 12px;
+            background: transparent;
+            color: #999;
+            border: 1.5px solid #ddd;
+            border-radius: 14px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            margin-bottom: 12px;
+        }
+
+
     </style>
 </head>
 <body>
@@ -394,7 +510,7 @@
             table: "Table", payment: "Payment", pay_table: "Pay at the table",
             order_status: "Order status",
             status_received: "Received", status_cooking: "Cooking",
-            status_ready: "Ready", status_enjoy: "Enjoy!",
+            status_ready: "Ready", status_wating: "Payment", status_enjoy: "Enjoy!",
             wifi: "WiFi password",
             call_waiter: "🔔 Need something? Call waiter",
             waiter_calling: "⏳ Waiting for waiter...",
@@ -402,6 +518,17 @@
             waiter_coming: "Waiter is on the way! 🔔",
             waiter_wait: "Already called, wait a moment.",
             back: "← Back to menu", total: "Total",
+            comment: "💬 Comment",
+            request_bill: "Request bill",
+            bill_title: "Your bill",
+            bill_hint: "Scan QR to pay · Waiter will confirm",
+            thankyou: "Thank you!",
+            thankyou_sub: "See you next time 🙏",
+            share_order: "Share",
+            cancel_order: "Cancel order",
+            cancel_confirm: "Cancel this order?",
+            cancelled_title: "Order cancelled",
+            cancelled_sub: "You can place a new order",
         },
         ru: {
             confirmed: "подтверждён!", your_order: "Ваш заказ",
@@ -410,7 +537,7 @@
             table: "Стол", payment: "Оплата", pay_table: "Оплата за столом",
             order_status: "Статус заказа",
             status_received: "Принят", status_cooking: "Готовится",
-            status_ready: "Готово", status_enjoy: "Приятного!",
+            status_ready: "Готово", status_wating: "Оплата", status_enjoy: "Приятного!",
             wifi: "Пароль WiFi",
             call_waiter: "🔔 Вызвать официанта",
             waiter_calling: "⏳ Ожидание официанта...",
@@ -418,6 +545,17 @@
             waiter_coming: "Официант уже идёт! 🔔",
             waiter_wait: "Уже вызван, подождите.",
             back: "← Назад в меню", total: "Итого",
+            comment: "💬 Комментарий:",
+            request_bill: "Запросить счёт",
+            bill_title: "Ваш счёт",
+            bill_hint: "Отканируйте QR-код для оплаты · Дождитесь подтверждения",
+            thankyou: "Списибо!",
+            thankyou_sub: "Будем рады видеть снова 🙏",
+            share_order: "Поделиться",
+            cancel_order: "Отмена заказа",
+            cancel_confirm: "Отменить этот заказ?",
+            cancelled_title: "Заказ отменён",
+            cancelled_sub: "Вы можете сделать новый заказ",
         },
         lo: {
             confirmed: "ຢືນຢັນແລ້ວ!", your_order: "ຄໍາສັ່ງຂອງທ່ານ",
@@ -434,6 +572,7 @@
             waiter_coming: "ພະນັກງານກໍາລັງມາ! 🔔",
             waiter_wait: "ເອີ້ນແລ້ວ, ລໍຖ້າ.",
             back: "← ກັບໄປເມນູ", total: "ລວມ",
+            comment: "💬 Comment:"
         },
         zh: {
             confirmed: "已确认!", your_order: "您的订单",
@@ -450,6 +589,7 @@
             waiter_coming: "服务员正在赶来! 🔔",
             waiter_wait: "已呼叫，请稍候。",
             back: "← 返回菜单", total: "合计",
+            comment: "💬 Comment:"
         },
         th: {
             confirmed: "ยืนยันแล้ว!", your_order: "คำสั่งของคุณ",
@@ -466,6 +606,7 @@
             waiter_coming: "พนักงานกำลังมา! 🔔",
             waiter_wait: "เรียกแล้ว รอสักครู่",
             back: "← กลับเมนู", total: "รวม",
+            comment: "💬 Comment:"
         },
         ko: {
             confirmed: "확인되었습니다!", your_order: "주문 내역",
@@ -482,6 +623,7 @@
             waiter_coming: "직원이 오고 있어요! 🔔",
             waiter_wait: "이미 호출했습니다.",
             back: "← 메뉴로 돌아가기", total: "합계",
+            comment: "💬 Comment:"
         },
         fr: {
             confirmed: "confirmée!", your_order: "Votre commande",
@@ -498,6 +640,7 @@
             waiter_coming: "Le serveur arrive! 🔔",
             waiter_wait: "Déjà appelé, attendez.",
             back: "← Retour au menu", total: "Total",
+            comment: "💬 Comment:"
         },
         ar: {
             confirmed: "تم التأكيد!", your_order: "طلبك",
@@ -514,8 +657,11 @@
             waiter_coming: "النادل في الطريق! 🔔",
             waiter_wait: "تم الاستدعاء، انتظر.",
             back: "→ العودة للقائمة", total: "المجموع",
+            comment: "💬 Comment:"
         },
     };
+
+    localStorage.setItem(`active_order:${RESTAURANT_ID}:${TABLE_ID}`, ORDER_ID);
 </script>
 
 <div x-data="orderDoneApp()" x-init="init()" x-cloak>
@@ -526,6 +672,10 @@
             #{{ "%03d"|format(order.id) }} <span x-text="t.confirmed"></span>
         </div>
         <div class="header-sub">{{ restaurant.name }} · <span x-text="t.table"></span> {{ table.number }}</div>
+        <button x-show="canShare" @click="shareOrder()"
+            style="margin-top:8px;background:transparent;border:1px solid rgba(255,255,255,0.4);color:#fff;border-radius:20px;padding:5px 14px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;">
+        <i class="bi bi-share"></i> <span x-text="t.share_order"></span>
+</button>
     </div>
 
     <div class="body">
@@ -547,9 +697,7 @@
                 {% for item in order.items %}
                 <div class="order-item">
                     <div class="oi-left">
-                        <div class="oi-name">{{ item.dish['name_' + lang] if item.dish['name_' + lang] else
-                            item.dish.name }}
-                        </div>
+                        <div class="oi-name">{{ item.dish_name }}</div>
                         {% if item.modifier_label %}
                         <div class="oi-mod">{{ item.modifier_label }}</div>
                         {% endif %}
@@ -564,6 +712,10 @@
                 <span class="total-label" x-text="t.total"></span>
                 <span class="total-amount">{{ "{:,}".format(order.total) }} ₭</span>
             </div>
+            {% if order.comment %}
+            <div class="order-comment" x-text="t.comment"></div>
+            <div class = "comment-text">{{ order.comment }}</div>
+            {% endif %}
         </div>
 
         {# ── Info ── #}
@@ -616,6 +768,13 @@
                 </div>
 
                 <div class="status-step">
+                    <div class="step-dot" :class="stepClass('awaiting_payment')">
+                        <span x-text="stepIcon('awaiting_payment')"></span>
+                    </div>
+                    <div class="step-label" :class="stepLabelClass('awaiting_payment')" x-text="t.status_wating"></div>
+                </div>
+
+                <div class="status-step">
                     <div class="step-dot" :class="stepClass('done')">
                         <span x-text="stepIcon('done')"></span>
                     </div>
@@ -647,6 +806,46 @@
 
         <div class="waiter-toast" x-show="waiterToast" x-cloak x-text="waiterMsg"></div>
 
+        {# ── Request bill ── #}
+        <div x-show="orderStatus === 'ready'" x-cloak>
+            <button class="bill-btn" @click="requestBill()">💳 <span x-text="t.request_bill"></span></button>
+        </div>
+
+        {# ── Cancel order (guest) ── #}
+        <div x-show="orderStatus === 'new'" x-cloak>
+            <button class="cancel-guest-btn" @click="cancelOrderGuest()">
+                ✕ <span x-text="t.cancel_order"></span>
+            </button>
+        </div>
+
+        {# ── Awaiting payment ── #}
+        <div class="bill-card" x-show="orderStatus === 'awaiting_payment'" x-cloak>
+            <div class="bill-title" x-text="t.bill_title"></div>
+            <div class="bill-amount">{{ "{:,}".format(order.total) }} ₭</div>
+            {% if restaurant.payment_qr_url %}
+            <img class="bill-qr" src="{{ restaurant.payment_qr_url }}" alt="Payment QR">
+            {% endif %}
+            <div class="bill-hint" x-text="t.bill_hint"></div>
+        </div>
+
+
+
+        {# ── Thank you ── #}
+        <div class="thankyou-card" x-show="orderStatus === 'done'" x-cloak>
+            <div class="ty-emoji">🙏</div>
+            <div class="ty-title" x-text="t.thankyou"></div>
+            <div class="ty-sub" x-text="t.thankyou_sub"></div>
+        </div>
+
+        {# ── Cancelled ── #}
+        <div class="thankyou-card" x-show="orderStatus === 'cancelled'" x-cloak>
+            <div class="ty-emoji">😔</div>
+            <div class="ty-title" x-text="t.cancelled_title"></div>
+            <div class="ty-sub" x-text="t.cancelled_sub"></div>
+            <a href="/menu/{{ restaurant.id }}/{{ table.id }}?lang={{ lang or 'en' }}"
+               class="back-btn" x-text="t.back"></a>
+        </div>
+
         {# ── Back to menu ── #}
         <a href="/menu/{{ restaurant.id }}/{{ table.id }}?lang={{ lang or 'en' }}" class="back-btn" x-text="t.back"></a>
 
@@ -665,6 +864,7 @@
             waiterMsg: '',
             waiterPollInterval: null,
             statusPollInterval: null,
+            canShare: !!navigator.share,
 
             get t() {
                 return I18N[this.lang] || I18N['en'];
@@ -682,14 +882,21 @@
                     this.orderStatus = data.status;
                     if (data.status === 'done') {
                         clearInterval(this.statusPollInterval);
+                        localStorage.removeItem(`active_order:${RESTAURANT_ID}:${TABLE_ID}`);
                     }
-                } catch {
-                }
+                    if (data.status === 'cancelled') {
+                        clearInterval(this.statusPollInterval);
+                        localStorage.removeItem(`active_order:${RESTAURANT_ID}:${TABLE_ID}`);
+                    }
+                    if (data.status === 'ready') {
+                        document.title = '✅ ' + document.title;
+                    }
+                } catch {}
             },
 
             stepClass(step) {
-                const order = ['new', 'accepted', 'ready', 'done'];
-                const stepMap = {cooking: 'accepted', ready: 'ready', done: 'done'};
+                const order = ['new', 'accepted', 'ready', 'awaiting_payment', 'done'];
+                const stepMap = {cooking: 'accepted', ready: 'ready', awaiting_payment: 'awaiting_payment', done: 'done'};
                 const statusStep = stepMap[step];
                 const currentIdx = order.indexOf(this.orderStatus);
                 const stepIdx = order.indexOf(statusStep);
@@ -706,8 +913,15 @@
             stepIcon(step) {
                 const cls = this.stepClass(step);
                 if (cls === 'done') return '✓';
-                const icons = {cooking: '👨‍🍳', ready: '🍽️', done: '😊'};
+                const icons = {cooking: '👨‍🍳', ready: '🍽️', awaiting_payment: '💳', done: '😊'};
                 return icons[step] || '•';
+            },
+
+            shareOrder() {
+                navigator.share({
+                    title: `Order #${String(ORDER_ID).padStart(3, '0')} · {{ restaurant.name }}`,
+                    url: window.location.href
+                }).catch(() => {});
             },
 
             async callWaiter() {
@@ -740,7 +954,27 @@
                 }
             },
 
-            startWaiterPoll() {
+            async requestBill() {
+                try {
+                    const res = await fetch(`/api/request-bill/${ORDER_ID}`, { method: 'POST' });
+                    if (res.ok) {
+                        this.orderStatus = 'awaiting_payment';
+                    }
+                } catch {
+                    console.error('Request bill failed');
+                }
+            },
+
+            async cancelOrderGuest() {
+                if (!confirm(this.t.cancel_confirm)) return;
+                const res = await fetch(`/api/order/${ORDER_ID}/cancel-guest`, { method: 'POST' });
+                if (res.ok) {
+                    this.orderStatus = 'cancelled';
+                    localStorage.removeItem(`active_order:${RESTAURANT_ID}:${TABLE_ID}`);
+                }
+            },
+
+           startWaiterPoll() {
                 if (this.waiterPollInterval) clearInterval(this.waiterPollInterval);
                 this.waiterPollInterval = setInterval(async () => {
                     if (!this.waiterCallId) return;

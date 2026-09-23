@@ -311,6 +311,11 @@
             color: #2BADA4;
         }
 
+        .b-payment {
+            background: #FFF8E0;
+            color: #CC8800;
+        }
+
         .b-done {
             background: #E8F5EE;
             color: var(--success);
@@ -470,6 +475,16 @@
         .toast.show {
             display: block;
         }
+
+        .order-comment,
+        .oc-comment {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 6px;
+            padding-bottom: 6px;
+            font-style: italic;
+            border-bottom: 1px solid var(--border);
+        }
     </style>
 </head>
 <body>
@@ -489,6 +504,10 @@
         <a href="/admin/analytics" class="nav-tab">
             <span class="lo">ສະຖິຕິ</span>
             <span class="en">Analytics</span>
+        </a>
+        <a href="/admin/qr-tables" class="nav-tab">
+            <span class="lo">QR ໂຕະ</span>
+            <span class="en">QR Tables</span>
         </a>
     </div>
     <div class="nav-right" id="last-update">–</div>
@@ -579,6 +598,7 @@
             new: ['🆕 ໃໝ່', 'b-new'],
             accepted: ['⏳ ກໍາລັງປຸງ', 'b-accepted'],
             ready: ['✅ ພ້ອມແລ້ວ', 'b-ready'],
+            awaiting_payment: ['💳 ລໍຖ້າຊໍາລະ', 'b-payment'],
             done: ['✔ ສໍາເລັດ', 'b-done'],
         };
         const [label, cls] = map[status] || ['–', ''];
@@ -600,8 +620,12 @@
         <button class="btn-ready" onclick="updateStatus(${orderId}, 'ready')">🍽️ ອາຫານພ້ອມ · Ready</button>
         <button class="btn-cancel" onclick="cancelOrder(${orderId})">✕</button>
       `;
-        if (status === 'ready') return `
-        <button class="btn-done" onclick="updateStatus(${orderId}, 'done')">✔ ສໍາເລັດ · Done</button>
+      //  if (status === 'ready') return `
+      //  <button class="btn-done" onclick="updateStatus(${orderId}, 'done')">✔ ສໍາເລັດ · </button>
+      //`;
+        if (status === 'awaiting_payment') return `
+        <button class="btn-done" onclick="updateStatus(${orderId}, 'done')">✔ ຊໍາລະແລ້ວ · Paid</button>
+        <button class="btn-cancel" onclick="cancelOrder(${orderId})">✕</button>
       `;
         return '';
     }
@@ -640,6 +664,7 @@
               ${statusBadge(o.status)}
             </div>
             <div class="oc-items">${items}</div>
+            ${o.comment ? `<div class="oc-comment">💬 ${o.comment}</div>` : ''}
             <div class="oc-foot">
               <div class="oc-meta">${orderTypeLabel(o.order_type)}</div>
               <div class="oc-total">${formatPrice(o.total)}</div>
@@ -680,37 +705,58 @@
       `).join('');
     }
 
-    function updateStats(orders) {
-        const today = new Date().toDateString();
-        const todayOrders = orders.filter(o => new Date(o.created_at + 'Z').toDateString() === today);
-        const revenue = todayOrders.reduce((s, o) => s + o.total, 0);
-        const avg = todayOrders.length ? Math.round(revenue / todayOrders.length) : 0;
-
-        document.getElementById('stat-orders').textContent = todayOrders.length;
-        document.getElementById('stat-revenue').textContent = formatPrice(revenue);
-        document.getElementById('stat-avg').textContent = avg ? formatPrice(avg) : '–';
+    async function updateStats() {
+        const res = await fetch(`/api/admin/stats/today/${RESTAURANT_ID}`);
+        const data = await res.json();
+        document.getElementById('stat-orders').textContent = data.total_orders;
+        document.getElementById('stat-revenue').textContent = formatPrice(data.revenue);
+        document.getElementById('stat-avg').textContent = data.avg_check ? formatPrice(data.avg_check) : '–';
     }
 
     async function poll() {
-        try {
-            const [ordersRes, callsRes] = await Promise.all([
-                fetch(`/api/admin/orders/${RESTAURANT_ID}`),
-                fetch(`/api/admin/calls/${RESTAURANT_ID}`)
-            ]);
+    try {
+        const [ordersRes, callsRes] = await Promise.all([
+            fetch(`/api/admin/orders/${RESTAURANT_ID}`),
+            fetch(`/api/admin/calls/${RESTAURANT_ID}`)
+        ]);
 
-            const orders = await ordersRes.json();
-            const calls = await callsRes.json();
+        const orders = await ordersRes.json();
+        const calls = await callsRes.json();
 
-            renderOrders(orders);
-            renderCalls(calls);
-            updateStats(orders);
-
-            document.getElementById('last-update').textContent =
-                'Updated ' + new Date().toLocaleTimeString();
-        } catch (e) {
-            console.error('Poll error:', e);
+        // Новые заказы
+        const orderIds = new Set(orders.map(o => o.id));
+        const orderMap = new Map(orders.map(o => [o.id, o.status]));
+        if (_knownOrders !== null) {
+            orders.forEach(o => {
+                if (!_knownOrders.has(o.id)) beepOrder();
+                else if (o.status === 'awaiting_payment' && _knownOrderStatuses.get(o.id) !== 'awaiting_payment') beepBill();
+            });
         }
+
+        _knownOrders = orderIds;
+        _knownOrderStatuses = orderMap;
+
+        // Новые вызовы
+        const callIds = new Set(calls.map(c => c.id));
+        if (_knownCalls !== null) {
+            calls.map(c => { if (!_knownCalls.has(c.id)) beepCall(); });
+        }
+        _knownCalls = callIds;
+
+        renderOrders(orders);
+        renderCalls(calls);
+        await updateStats();
+
+        document.getElementById('last-update').textContent =
+            'Updated ' + new Date().toLocaleTimeString();
+
+        document.querySelector('.poll-dot').style.background = '#2D9B6B';
+    } catch (e) {
+        console.error('Poll error:', e);
+        document.getElementById('last-update').textContent = '⚠️ No connection';
+        document.querySelector('.poll-dot').style.background = '#e53e3e';
     }
+}
 
     async function updateStatus(orderId, status) {
         await fetch(`/admin/order/${orderId}/status`, {
@@ -723,8 +769,13 @@
     }
 
     async function cancelOrder(orderId) {
-        if (!confirm('Cancel this order?')) return;
-        await fetch(`/admin/order/${orderId}/cancel`, {method: 'POST'});
+        const reason = prompt('Reason for cancellation (optional):');
+        if (reason === null) return;
+        await fetch(`/admin/order/${orderId}/cancel`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({reason})
+        });
         showToast('Order cancelled');
         poll();
     }
@@ -735,7 +786,43 @@
         poll();
     }
 
+    // Audio
+    const _ac = new (window.AudioContext || window.webkitAudioContext)();
+    let _knownOrders = null;
+    let _knownCalls = null;
+    let _knownOrderStatuses = new Map();
+
+    function beep(freq = 880, duration = 0.15, vol = 0.4) {
+        const osc = _ac.createOscillator();
+        const gain = _ac.createGain();
+        osc.connect(gain);
+        gain.connect(_ac.destination);
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(vol, _ac.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, _ac.currentTime + duration);
+        osc.start();
+        osc.stop(_ac.currentTime + duration);
+    }
+
+    function beepOrder() {
+        beep(880, 0.15);
+        setTimeout(() => beep(1100, 0.2), 180);
+    }
+
+    function beepCall() {
+        beep(660, 0.1);
+        setTimeout(() => beep(660, 0.1), 150);
+        setTimeout(() => beep(880, 0.25), 300);
+    }
+
+    function beepBill() {
+    beep(520, 0.1);
+    setTimeout(() => beep(660, 0.1), 130);
+    setTimeout(() => beep(520, 0.1), 260);
+    setTimeout(() => beep(880, 0.3), 390);
+    }
     // Старт
+    document.addEventListener('click', () => _ac.resume(), { once: true });
     poll();
     setInterval(poll, 5000);
 </script>

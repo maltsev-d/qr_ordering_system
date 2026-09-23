@@ -1,7 +1,8 @@
+import html
 import json
 import os
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import httpx
 from dotenv import load_dotenv
@@ -17,6 +18,7 @@ from db.database import (CategoryDB, DishDB, ModifierGroupDB, OrderDB,
 from db.models import (CallWaiterRequest, OrderStatus, UpdateOrderStatusRequest)
 
 load_dotenv()
+
 TG_BOT_TOKEN = os.getenv("TG_BOT_TOKEN")
 TG_CHAT_ID = os.getenv("TG_CHAT_ID")
 
@@ -110,6 +112,11 @@ async def menu(
             "active": d.active, "price": d.price,
             "photo_url": d.photo_url,
             "is_surprise_eligible": d.is_surprise_eligible,
+            "is_new": d.is_new,
+            "is_available": d.is_available,
+            "discount_price": d.discount_price,
+            "dietary_tags": d.dietary_tags or [],
+            "allergens": d.allergens or [],
             "name_en": d.name_en, "name_lo": d.name_lo,
             "name_cn": d.name_cn, "name_ru": d.name_ru,
             "name_th": d.name_th, "name_ko": d.name_ko,
@@ -169,13 +176,23 @@ async def create_order(
         table_id: int = Form(...),
         order_type: str = Form(...),
         items: str = Form(...),
+        comment: str = Form(default=""),
         lang: str = Form(default="en"),
         db: Session = Depends(get_db)
 ):
-    items_data = json.loads(items)
+    try:
+        items_data = json.loads(items)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=422, detail="Invalid items JSON")
+
+    if order_type not in {"dine_in", "takeaway"}:
+        raise HTTPException(status_code=422, detail="Invalid order type")
 
     restaurant = db.query(RestaurantDB).filter(RestaurantDB.id == restaurant_id).first()
-    table = db.query(TableDB).filter(TableDB.id == table_id).first()
+    table = db.query(TableDB).filter(
+        TableDB.id == table_id,
+        TableDB.restaurant_id == restaurant_id
+    ).first()
 
     if not restaurant or not table:
         raise HTTPException(status_code=404, detail="Not found")
@@ -185,46 +202,74 @@ async def create_order(
         table_id=table_id,
         order_type=order_type,
         status=OrderStatus.NEW,
+        comment=comment.strip() or None,
         total=0
     )
     db.add(order)
     db.flush()
 
     total = 0
+    valid_items = 0
     for item_data in items_data:
-        dish = db.query(DishDB).filter(DishDB.id == item_data["dish_id"]).first()
+        qty = item_data.get("qty", 1)
+        if not isinstance(qty, int) or qty < 1:
+            continue
+
+        dish = db.query(DishDB).join(CategoryDB).filter(
+            DishDB.id == item_data["dish_id"],
+            DishDB.active == True,
+            DishDB.is_available == True,
+            CategoryDB.restaurant_id == restaurant_id
+        ).first()
         if not dish:
             continue
-        qty = item_data.get("qty", 1)
-        subtotal = dish.price * qty
+
+        # считаем price_add выбранных модификаторов
+        mods = item_data.get("modifiers", {})
+        price_add = 0
+        for mg in dish.modifier_groups:
+            mod_id = mods.get(str(mg.id))
+            if mod_id:
+                mod = next((m for m in mg.modifiers if str(m.id) == str(mod_id)), None)
+                if mod:
+                    price_add += mod.price_add
+
+        item_price = dish.price + price_add
+        subtotal = item_price * qty
         total += subtotal
+        valid_items += 1
 
         order_item = OrderItemDB(
             order_id=order.id,
             dish_id=dish.id,
             qty=qty,
-            modifiers_json=json.dumps(item_data.get("modifiers", {})),
+            modifiers_json=json.dumps(mods),
             subtotal=subtotal
         )
         db.add(order_item)
 
+    if valid_items == 0:
+        db.rollback()
+        raise HTTPException(status_code=422, detail="No valid items in order")
+
     order.total = total
     db.commit()
 
-    # Перезагрузить с dish для TG
+    # TG уведомление
     order_with_items = db.query(OrderDB).options(
         joinedload(OrderDB.items).joinedload(OrderItemDB.dish)
     ).filter(OrderDB.id == order.id).first()
 
     items_text = "\n".join([
-        f"• {i.dish.name_en} × {i.qty} — {i.subtotal:,} ₭"
+        f"• {html.escape(i.dish.name_en)} × {i.qty} — {i.subtotal:,} ₭"
         for i in order_with_items.items if i.dish
     ])
     order_type_label = "🍽️ Dine-in" if order_type == "dine_in" else "🥡 Takeaway"
+    comment_line = f"\n💬 {html.escape(comment.strip())}" if comment.strip() else ""
 
     await send_telegram(
         f"🆕 <b>New order / ຄໍາສັ່ງໃໝ່ #{order.id:03d}</b>\n"
-        f"Table / ໂຕະ {table.number} · {order_type_label}\n\n"
+        f"Table / ໂຕະ {table.number} · {order_type_label}{comment_line}\n\n"
         f"{items_text}\n\n"
         f"<b>Total / ລວມ: {order.total:,} ₭</b>"
     )
@@ -289,8 +334,8 @@ async def call_waiter(
     recent_call = db.query(WaiterCallDB).filter(
         WaiterCallDB.restaurant_id == request.restaurant_id,
         WaiterCallDB.table_id == request.table_id,
-        WaiterCallDB.called_at > datetime.utcnow() - timedelta(seconds=60),
-        WaiterCallDB.answered_at == None
+        WaiterCallDB.called_at > datetime.now(timezone.utc) - timedelta(seconds=60),
+        WaiterCallDB.answered_at.is_(None)
     ).first()
 
     if recent_call:
@@ -299,7 +344,7 @@ async def call_waiter(
     waiter_call = WaiterCallDB(
         restaurant_id=request.restaurant_id,
         table_id=request.table_id,
-        called_at=datetime.utcnow()
+        # called_at=datetime.utcnow()
     )
     db.add(waiter_call)
     db.commit()
@@ -345,7 +390,7 @@ async def admin_get_orders(restaurant_id: int, db: Session = Depends(get_db)):
         joinedload(OrderDB.table)
     ).filter(
         OrderDB.restaurant_id == restaurant_id,
-        OrderDB.status != OrderStatus.DONE
+        OrderDB.status.notin_([OrderStatus.DONE, OrderStatus.CANCELLED])
     ).order_by(OrderDB.created_at.desc()).limit(50).all()
 
     return [
@@ -354,6 +399,7 @@ async def admin_get_orders(restaurant_id: int, db: Session = Depends(get_db)):
             "status": o.status.value,
             "order_type": o.order_type.value,
             "total": o.total,
+            "comment": o.comment,
             "created_at": o.created_at.isoformat(),
             "table_number": o.table.number if o.table else "?",
             "items": [
@@ -375,7 +421,7 @@ async def admin_get_calls(restaurant_id: int, db: Session = Depends(get_db)):
         joinedload(WaiterCallDB.table)
     ).filter(
         WaiterCallDB.restaurant_id == restaurant_id,
-        WaiterCallDB.answered_at == None
+        WaiterCallDB.answered_at.is_(None)
     ).order_by(WaiterCallDB.called_at.desc()).all()
 
     return [
@@ -394,7 +440,7 @@ async def admin_analytics_data(
         days: int = 30,
         db: Session = Depends(get_db)
 ):
-    cutoff = datetime.utcnow() - timedelta(days=days)
+    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
     orders = db.query(OrderDB).options(
         joinedload(OrderDB.items).joinedload(OrderItemDB.dish)
     ).filter(
@@ -403,7 +449,7 @@ async def admin_analytics_data(
     ).all()
 
     total_orders = len(orders)
-    total_revenue = sum(o.total for o in orders)
+    total_revenue = sum(o.total for o in orders if o.status == OrderStatus.DONE)
     avg_check = total_revenue / total_orders if total_orders else 0
     completed = sum(1 for o in orders if o.status == OrderStatus.DONE)
     pending = sum(1 for o in orders if o.status in [
@@ -450,11 +496,29 @@ async def admin_analytics_data(
         "avg_check": avg_check,
         "completed_orders": completed,
         "pending_orders": pending,
-        "cancelled_orders": 0,
+        "cancelled_orders": sum(1 for o in orders if o.status == OrderStatus.CANCELLED),
         "completed_percentage": (completed / total_orders * 100) if total_orders else 0,
         "by_time": dict(by_time),
         "top_dishes": top_dishes,
         "by_day": by_day_list,
+    }
+
+
+@app.get("/api/admin/stats/today/{restaurant_id}")
+async def admin_stats_today(restaurant_id: int, db: Session = Depends(get_db)):
+    from datetime import date
+    today_start = datetime.combine(date.today(), datetime.min.time())
+    orders = db.query(OrderDB).filter(
+        OrderDB.restaurant_id == restaurant_id,
+        OrderDB.created_at >= today_start
+    ).all()
+    revenue = sum(o.total for o in orders if o.status == OrderStatus.DONE)
+    avg = round(revenue / len([o for o in orders if o.status == OrderStatus.DONE])) if any(
+        o.status == OrderStatus.DONE for o in orders) else 0
+    return {
+        "total_orders": len(orders),
+        "revenue": revenue,
+        "avg_check": avg,
     }
 
 
@@ -502,13 +566,30 @@ async def update_order_status(
 
 
 @app.post("/admin/order/{order_id}/cancel")
-async def cancel_order(order_id: int, db: Session = Depends(get_db)):
+async def cancel_order(order_id: int, request: Request, db: Session = Depends(get_db)):
+    data = await request.json()
+    reason = data.get("reason", "")
     order = db.query(OrderDB).filter(OrderDB.id == order_id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
-    db.delete(order)
+    if order.status in [OrderStatus.DONE, OrderStatus.CANCELLED]:
+        raise HTTPException(status_code=400, detail="Cannot cancel order in this status")
+    order.status = OrderStatus.CANCELLED
+    order.cancel_reason = reason
     db.commit()
-    return {"message": "Order cancelled"}
+    return {"ok": True}
+
+
+@app.post("/api/order/{order_id}/cancel-guest")
+async def cancel_order_guest(order_id: int, db: Session = Depends(get_db)):
+    order = db.query(OrderDB).filter(OrderDB.id == order_id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    if order.status != OrderStatus.NEW:
+        raise HTTPException(status_code=400, detail="Only new orders can be cancelled")
+    order.status = OrderStatus.CANCELLED
+    db.commit()
+    return {"ok": True}
 
 
 @app.post("/admin/call/{call_id}/answer")
@@ -516,7 +597,7 @@ async def answer_waiter_call(call_id: int, db: Session = Depends(get_db)):
     call = db.query(WaiterCallDB).filter(WaiterCallDB.id == call_id).first()
     if not call:
         raise HTTPException(status_code=404, detail="Call not found")
-    call.answered_at = datetime.utcnow()
+    call.answered_at = datetime.now(timezone.utc)
     db.commit()
     return {"id": call.id, "answered_at": call.answered_at.isoformat()}
 
@@ -531,6 +612,18 @@ async def toggle_dish_active(dish_id: int, db: Session = Depends(get_db)):
     return {"id": dish.id, "active": dish.active, "status": "available" if dish.active else "86"}
 
 
+@app.post("/api/request-bill/{order_id}")
+async def request_bill(order_id: int, db: Session = Depends(get_db)):
+    order = db.query(OrderDB).filter(OrderDB.id == order_id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    if order.status != OrderStatus.READY:
+        raise HTTPException(status_code=400, detail="Order is not ready")
+    order.status = OrderStatus.AWAITING_PAYMENT
+    db.commit()
+    return {"ok": True}
+
+
 # ─── Health ───
 
 @app.get("/health")
@@ -539,11 +632,28 @@ async def health_check():
 
 
 @app.head("/ping")
-async def health_check():
+async def ping_check():
     return {"status": "ok"}
 
 
 QR_BASE_URL = "https://qr-menu.maltsevdmitriiy.workers.dev"
+
+
+@app.get("/api/admin/tables/{restaurant_id}")
+async def get_tables(restaurant_id: int, db: Session = Depends(get_db)):
+    tables = db.query(TableDB).filter(TableDB.restaurant_id == restaurant_id).order_by(TableDB.number).all()
+    return [{"id": t.id, "number": t.number, "label": t.label} for t in tables]
+
+
+@app.get("/admin/qr-tables", response_class=HTMLResponse)
+async def qr_tables_page(request: Request, db: Session = Depends(get_db)):
+    restaurant = db.query(RestaurantDB).filter(RestaurantDB.id == 1).first()
+    tables = db.query(TableDB).filter(TableDB.restaurant_id == restaurant.id).order_by(TableDB.number).all()
+    return templates.TemplateResponse(
+        request=request,
+        name="admin/qr_tables.html",
+        context={"restaurant": restaurant, "tables": tables}
+    )
 
 
 @app.get("/admin/qr/{restaurant_id}/{table_id}")

@@ -4,8 +4,33 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
+# ─── Константы тегов ───
+
+DIETARY_TAGS = ["veg", "no_pork", "no_gluten", "spicy", "halal", "seafood"]
+
+ALLERGENS = ["gluten", "nuts", "dairy", "eggs", "shellfish", "soy"]
+
+DIETARY_TAG_LABELS = {
+    "veg": {"en": "Vegetarian", "lo": "ຜັກ", "emoji": "🌿"},
+    "no_pork": {"en": "No Pork", "lo": "ບໍ່ມີໝູ", "emoji": "🐷"},
+    "no_gluten": {"en": "Gluten Free", "lo": "ບໍ່ມີ Gluten", "emoji": "🌾"},
+    "spicy": {"en": "Spicy", "lo": "ເຜັດ", "emoji": "🌶️"},
+    "halal": {"en": "Halal", "lo": "ຮາລານ", "emoji": "☪️"},
+    "seafood": {"en": "Seafood", "lo": "ອາຫານທະເລ", "emoji": "🦐"},
+}
+
+ALLERGEN_LABELS = {
+    "gluten": {"en": "Gluten", "emoji": "🌾"},
+    "nuts": {"en": "Nuts", "emoji": "🥜"},
+    "dairy": {"en": "Dairy", "emoji": "🥛"},
+    "eggs": {"en": "Eggs", "emoji": "🥚"},
+    "shellfish": {"en": "Shellfish", "emoji": "🦞"},
+    "soy": {"en": "Soy", "emoji": "🫘"},
+}
+
 
 # ─── Enums ───
+
 class OrderType(str, Enum):
     DINE_IN = "dine_in"
     TAKEAWAY = "takeaway"
@@ -15,7 +40,9 @@ class OrderStatus(str, Enum):
     NEW = "new"
     ACCEPTED = "accepted"
     READY = "ready"
+    AWAITING_PAYMENT = "awaiting_payment"
     DONE = "done"
+    CANCELLED = "cancelled"
 
 
 class Language(str, Enum):
@@ -30,6 +57,7 @@ class Language(str, Enum):
 
 
 # ─── Restaurant ───
+
 class RestaurantBase(BaseModel):
     name: str
     logo_url: Optional[str] = None
@@ -48,6 +76,7 @@ class Restaurant(RestaurantBase):
 
 
 # ─── Table ───
+
 class TableBase(BaseModel):
     restaurant_id: int
     number: int
@@ -66,6 +95,7 @@ class Table(TableBase):
 
 
 # ─── Category ───
+
 class CategoryBase(BaseModel):
     restaurant_id: int
     sort_order: int = 0
@@ -91,6 +121,7 @@ class Category(CategoryBase):
 
 
 # ─── Modifier ───
+
 class ModifierBase(BaseModel):
     group_id: int
     label_en: str
@@ -102,7 +133,7 @@ class ModifierBase(BaseModel):
     label_fr: str
     label_ar: str
     emoji: Optional[str] = None
-    price_add: int = 0  # в наименьших единицах (лак)
+    price_add: int = 0  # 0 = бесплатно
 
 
 class ModifierCreate(ModifierBase):
@@ -117,6 +148,7 @@ class Modifier(ModifierBase):
 
 
 # ─── ModifierGroup ───
+
 class ModifierGroupBase(BaseModel):
     dish_id: int
     name_en: str
@@ -143,10 +175,18 @@ class ModifierGroup(ModifierGroupBase):
 
 
 # ─── Dish ───
+
 class DishBase(BaseModel):
     category_id: int
     sort_order: int = 0
+
+    # availability
     active: bool = True
+    is_available: bool = True
+    is_new: bool = False
+    is_surprise_eligible: bool = False
+
+    # names
     name_en: str
     name_lo: str
     name_cn: str
@@ -155,6 +195,8 @@ class DishBase(BaseModel):
     name_ko: str
     name_fr: str
     name_ar: str
+
+    # descriptions
     desc_en: str
     desc_lo: str
     desc_cn: str
@@ -163,9 +205,17 @@ class DishBase(BaseModel):
     desc_ko: str
     desc_fr: str
     desc_ar: str
-    price: int  # в лаках
+
+    # pricing
+    price: int
+    discount_price: Optional[int] = None
+
+    # media
     photo_url: Optional[str] = None
-    is_surprise_eligible: bool = False
+
+    # tags
+    dietary_tags: List[str] = []
+    allergens: List[str] = []
 
 
 class DishCreate(DishBase):
@@ -181,12 +231,13 @@ class Dish(DishBase):
 
 
 # ─── OrderItem ───
+
 class OrderItemBase(BaseModel):
     order_id: int
     dish_id: int
     qty: int
-    modifiers_json: Optional[str] = None  # JSON строка с выбранными модификаторами
-    subtotal: int  # в лаках
+    modifiers_json: Optional[str] = None  # {"group_id": modifier_id, ...}
+    subtotal: int  # с учётом price_add и qty
 
 
 class OrderItemCreate(OrderItemBase):
@@ -201,12 +252,14 @@ class OrderItem(OrderItemBase):
 
 
 # ─── Order ───
+
 class OrderBase(BaseModel):
     restaurant_id: int
     table_id: int
     order_type: OrderType
     status: OrderStatus = OrderStatus.NEW
-    total: int  # в лаках
+    total: int
+    comment: Optional[str] = None
 
 
 class OrderCreate(OrderBase):
@@ -223,6 +276,7 @@ class Order(OrderBase):
 
 
 # ─── WaiterCall ───
+
 class WaiterCallBase(BaseModel):
     restaurant_id: int
     table_id: int
@@ -242,16 +296,24 @@ class WaiterCall(WaiterCallBase):
 
 
 # ─── Request/Response Schemas ───
+
 class CallWaiterRequest(BaseModel):
     restaurant_id: int
     table_id: int
+
+
+class OrderItemRequest(BaseModel):
+    dish_id: int
+    qty: int
+    modifiers: dict = {}  # {str(group_id): modifier_id}
 
 
 class OrderRequest(BaseModel):
     restaurant_id: int
     table_id: int
     order_type: OrderType
-    items: List[dict]  # [{"dish_id": 1, "qty": 2, "modifiers": {...}}]
+    items: List[OrderItemRequest]
+    comment: Optional[str] = None
 
 
 class UpdateOrderStatusRequest(BaseModel):
