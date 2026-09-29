@@ -23,6 +23,8 @@ load_dotenv()
 
 TG_BOT_TOKEN = os.getenv("TG_BOT_TOKEN")
 TG_CHAT_ID = os.getenv("TG_CHAT_ID")
+ADMIN_USER = os.getenv("ADMIN_USER", "admin")
+ADMIN_PASS = os.getenv("ADMIN_PASS")
 
 app = FastAPI(title="Sabaidee Kitchen", version="3.0.0")
 
@@ -41,6 +43,8 @@ LANG_FIELD_MAP = {
     "ru": "ru", "ko": "ko", "fr": "fr",
     "lo": "lo", "ar": "ar",
 }
+
+MOD_LANGS = ["en", "lo", "cn", "ru", "th", "ko", "fr", "ar"]
 
 
 def lang_field(lang: str) -> str:
@@ -864,16 +868,16 @@ async def upload_photo(file: UploadFile = File(...)):
     return {"url": f"/static/img/{filename}"}
 
 
-@app.get("/api/admin/dish/{dish_id}/modifiers")
-async def get_dish_modifiers(dish_id: int, db: Session = Depends(get_db)):
-    groups = db.query(ModifierGroupDB).filter(ModifierGroupDB.dish_id == dish_id).all()
-    return [{
-        "id": g.id,
-        "name_en": g.name_en,
-        "required": g.required,
-        "modifiers": [{"id": m.id, "label_en": m.label_en, "emoji": m.emoji, "price_add": m.price_add} for m in
-                      g.modifiers]
-    } for g in groups]
+# @app.get("/api/admin/dish/{dish_id}/modifiers")
+# async def get_dish_modifiers(dish_id: int, db: Session = Depends(get_db)):
+#     groups = db.query(ModifierGroupDB).filter(ModifierGroupDB.dish_id == dish_id).all()
+#     return [{
+#         "id": g.id,
+#         "name_en": g.name_en,
+#         "required": g.required,
+#         "modifiers": [{"id": m.id, "label_en": m.label_en, "emoji": m.emoji, "price_add": m.price_add} for m in
+#                       g.modifiers]
+#     } for g in groups]
 
 
 @app.post("/api/request-bill/{order_id}")
@@ -935,6 +939,24 @@ async def generate_qr(restaurant_id: int, table_id: int):
     buf.seek(0)
 
     return StreamingResponse(buf, media_type="image/png")
+
+
+@app.middleware("http")
+async def admin_basic_auth(request: Request, call_next):
+    if request.url.path.startswith(("/admin", "/api/admin")):
+        ok = False
+        auth = request.headers.get("authorization", "")
+        if ADMIN_PASS and auth.startswith("Basic "):
+            try:
+                user, _, pwd = base64.b64decode(auth[6:]).decode().partition(":")
+                ok = (secrets.compare_digest(user, ADMIN_USER)
+                      and secrets.compare_digest(pwd, ADMIN_PASS))
+            except Exception:
+                ok = False
+        if not ok:
+            return Response(status_code=401,
+                            headers={"WWW-Authenticate": 'Basic realm="admin"'})
+    return await call_next(request)
 
 
 if __name__ == "__main__":

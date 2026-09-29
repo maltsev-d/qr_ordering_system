@@ -177,6 +177,7 @@ class OrderDB(Base):
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     total = Column(Integer)
     comment = Column(Text, nullable=True)  # комментарий гостя
+    cancel_reason = Column(String, nullable=True)  # причина отмены (официант) или "guest"
 
     restaurant = relationship("RestaurantDB", back_populates="orders")
     table = relationship("TableDB", back_populates="orders")

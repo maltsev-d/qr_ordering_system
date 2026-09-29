@@ -279,6 +279,7 @@ class OrderBase(BaseModel):
     status: OrderStatus = OrderStatus.NEW
     total: int
     comment: Optional[str] = None
+    cancel_reason: Optional[str] = None
 
 
 class OrderCreate(OrderBase):
