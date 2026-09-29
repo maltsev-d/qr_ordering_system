@@ -1,6 +1,8 @@
+import base64
 import html
 import json
 import os
+import secrets
 import shutil
 import uuid
 from collections import defaultdict
@@ -8,7 +10,7 @@ from datetime import datetime, timedelta, timezone
 
 import httpx
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, Response, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
