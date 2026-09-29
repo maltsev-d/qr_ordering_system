@@ -512,9 +512,7 @@
         <!-- Modifiers -->
         <div class="panel-section">
             <div class="panel-section-title">Modifiers</div>
-            <div id="mod-list">
-                <div style="font-size:12px;color:var(--muted)">Save dish first to add modifiers.</div>
-            </div>
+            <div class="tag-grid" id="mod-list"></div>
         </div>
 
     </div>
@@ -753,10 +751,9 @@
                 if (el) el.checked = true;
             });
             // modifiers
-            renderModifiers(currentDish.id);
+            loadAndRenderModifiers(currentDish.id);
         } else {
-            document.getElementById('mod-list').innerHTML =
-                `<div style="font-size:12px;color:var(--muted)">Save dish first to add modifiers.</div>`;
+            loadAllModifierGroups();
         }
 
         // set default lang
@@ -846,13 +843,32 @@
             });
             showToast('Dish updated ✓');
         } else {
-            await fetch('/api/admin/dish', {
+            const res = await fetch('/api/admin/dish', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(payload)
             });
+            const created = await res.json();
+            const group_ids = [...document.querySelectorAll('#mod-list .tag-check:checked')].map(c => parseInt(c.value));
+            if (group_ids.length) {
+                await fetch(`/api/admin/dish/${created.id}/modifiers`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({group_ids})
+                });
+            }
             showToast('Dish created ✓');
         }
+
+        if (currentDish) {
+            const group_ids = [...document.querySelectorAll('#mod-list .tag-check:checked')].map(c => parseInt(c.value));
+            await fetch(`/api/admin/dish/${currentDish.id}/modifiers`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({group_ids})
+            });
+        }
+
         closePanel();
         loadMenu();
     }
@@ -875,34 +891,40 @@
     }
 
     // ── Modifiers (read-only for now) ──
-    function renderModifiers(dishId) {
-        const cat = menuData.find(c => c.dishes.some(d => d.id === dishId));
-        if (!cat) return;
-        const dish = cat.dishes.find(d => d.id === dishId);
-        // modifiers loaded separately
-        fetch(`/api/admin/dish/${dishId}/modifiers`)
-            .then(r => r.json())
-            .then(groups => {
-                const el = document.getElementById('mod-list');
-                if (!groups.length) {
-                    el.innerHTML = `<div style="font-size:12px;color:var(--muted)">No modifiers yet.</div>`;
-                    return;
-                }
-                el.innerHTML = groups.map(g => `
-                    <div class="mod-group">
-                        <div class="mod-group-head">
-                            <div class="mod-group-name">${g.name_en} ${g.required ? '(required)' : ''}</div>
-                        </div>
-                        ${g.modifiers.map(m => `
-                            <div class="mod-item">
-                                ${m.emoji || ''} ${m.label_en}
-                                <span class="mod-price">${m.price_add ? '+' + fmtPrice(m.price_add) : 'free'}</span>
-                            </div>`).join('')}
-                    </div>`).join('');
-            }).catch(() => {
-                document.getElementById('mod-list').innerHTML =
-                    `<div style="font-size:12px;color:var(--muted)">No modifiers.</div>`;
-            });
+    let allModifierGroups = [];
+    let linkedGroupIds = new Set();
+
+    async function loadAllModifierGroups() {
+        const res = await fetch(`/api/admin/modifier-groups/${RESTAURANT_ID}`);
+        allModifierGroups = await res.json();
+        linkedGroupIds = new Set();
+        renderModifierCheckboxes();
+    }
+
+    async function loadAndRenderModifiers(dishId) {
+        const [groupsRes, linkedRes] = await Promise.all([
+            fetch(`/api/admin/modifier-groups/${RESTAURANT_ID}`),
+            fetch(`/api/admin/dish/${dishId}/modifiers`)
+        ]);
+        allModifierGroups = await groupsRes.json();
+        const linked = await linkedRes.json();
+        linkedGroupIds = new Set(linked);
+        renderModifierCheckboxes();
+    }
+
+    function renderModifierCheckboxes() {
+        const el = document.getElementById('mod-list');
+        if (!allModifierGroups.length) {
+            el.innerHTML = `<div style="font-size:12px;color:var(--muted)">No modifier groups yet.</div>`;
+            return;
+        }
+        el.innerHTML = allModifierGroups.map(g => `
+            <input type="checkbox" class="tag-check" id="mg-${g.id}" value="${g.id}" ${linkedGroupIds.has(g.id) ? 'checked' : ''}>
+            <label class="tag-check-label" for="mg-${g.id}">
+                ${g.name_en}${g.required ? ' *' : ''}
+                <span style="font-size:10px;opacity:.6;margin-left:4px">${g.modifiers.map(m => (m.emoji || '') + ' ' + m.label_en).join(', ')}</span>
+            </label>
+        `).join('');
     }
 
     // ── Category modal ──
