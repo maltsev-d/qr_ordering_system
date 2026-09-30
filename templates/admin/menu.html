@@ -24,7 +24,6 @@
 
         body { font-family: 'Poppins', sans-serif; background: var(--bg); min-height: 100vh; }
 
-        /* ── Nav ── */
         .nav {
             background: var(--nav);
             display: flex; align-items: center;
@@ -43,7 +42,6 @@
         .nav-tab .en { font-size: 8px; opacity: 0.5; }
         .nav-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
 
-        /* ── Layout ── */
         .body { padding: 20px; max-width: 1000px; margin: 0 auto; }
 
         .toolbar {
@@ -51,7 +49,7 @@
             margin-bottom: 20px; gap: 12px;
         }
         .toolbar-title { font-size: 18px; font-weight: 700; color: var(--text); }
-        .toolbar-right { display: flex; gap: 8px; }
+        .toolbar-right { display: flex; gap: 8px; align-items: center; }
 
         .btn {
             padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 600;
@@ -64,9 +62,7 @@
         .btn-danger { background: #FFF0F0; color: var(--danger); border: 1.5px solid #FECACA; }
         .btn-sm { padding: 5px 10px; font-size: 11px; }
 
-        /* ── Category section ── */
         .cat-section { margin-bottom: 16px; }
-
         .cat-header {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -76,10 +72,8 @@
         }
         .cat-header-expanded { border-radius: 12px 12px 0 0; }
         .cat-header-collapsed { border-radius: 12px; }
-
         .cat-toggle { cursor: pointer; color: var(--muted); font-size: 14px; transition: transform .2s; }
         .cat-toggle.open { transform: rotate(90deg); }
-
         .cat-name-wrap { flex: 1; display: flex; align-items: center; gap: 8px; }
         .cat-name { font-size: 14px; font-weight: 700; color: var(--text); }
         .cat-name-lo { font-size: 11px; color: var(--muted); }
@@ -89,7 +83,6 @@
         }
         .cat-actions { display: flex; gap: 6px; }
 
-        /* ── Dish table ── */
         .dish-table {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -97,7 +90,6 @@
             border-radius: 0 0 12px 12px;
             overflow: hidden;
         }
-
         .dish-table-head {
             display: grid;
             grid-template-columns: 48px 1fr 90px 70px 60px 60px 60px 60px 80px;
@@ -107,7 +99,6 @@
             font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase;
             letter-spacing: 0.03em;
         }
-
         .dish-row {
             display: grid;
             grid-template-columns: 48px 1fr 90px 70px 60px 60px 60px 60px 80px;
@@ -118,7 +109,6 @@
         }
         .dish-row:last-child { border-bottom: none; }
         .dish-row:hover { background: #FAFAF8; }
-
         .dish-thumb {
             width: 36px; height: 36px; border-radius: 8px;
             object-fit: cover; background: var(--bg);
@@ -126,32 +116,24 @@
             font-size: 18px; overflow: hidden; flex-shrink: 0;
         }
         .dish-thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
-
         .dish-info { padding-right: 12px; }
         .dish-name { font-size: 13px; font-weight: 600; color: var(--text); }
         .dish-name-lo { font-size: 10px; color: var(--muted); }
-
         .dish-price { font-size: 13px; font-weight: 600; color: var(--text); }
         .dish-price-old { font-size: 10px; color: var(--muted); text-decoration: line-through; }
 
-        /* ── Toggle switch ── */
         .tog-wrap { display: flex; align-items: center; justify-content: center; }
-        .tog {
-            position: relative; width: 36px; height: 20px;
-            cursor: pointer; display: inline-block;
-        }
+        .tog { position: relative; width: 36px; height: 20px; cursor: pointer; display: inline-block; }
         .tog input { opacity: 0; width: 0; height: 0; }
         .tog-slider {
             position: absolute; inset: 0;
-            background: #ddd; border-radius: 20px;
-            transition: background .2s;
+            background: #ddd; border-radius: 20px; transition: background .2s;
         }
         .tog-slider::before {
             content: ''; position: absolute;
             width: 14px; height: 14px; border-radius: 50%;
             background: #fff; top: 3px; left: 3px;
-            transition: transform .2s;
-            box-shadow: 0 1px 3px rgba(0,0,0,.2);
+            transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2);
         }
         .tog input:checked + .tog-slider { background: var(--success); }
         .tog input:checked + .tog-slider::before { transform: translateX(16px); }
@@ -168,10 +150,7 @@
         .icon-btn:hover { background: var(--border); color: var(--text); }
         .icon-btn.danger:hover { background: #FFF0F0; color: var(--danger); }
 
-        .add-dish-row {
-            padding: 10px 16px;
-            border-top: 1px dashed var(--border);
-        }
+        .add-dish-row { padding: 10px 16px; border-top: 1px dashed var(--border); }
         .add-dish-btn {
             background: none; border: none; color: var(--primary);
             font-size: 12px; font-weight: 600; cursor: pointer;
@@ -179,13 +158,11 @@
             display: flex; align-items: center; gap: 6px;
         }
 
-        /* ── Slide panel ── */
         .panel-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,.35);
             z-index: 200; opacity: 0; pointer-events: none; transition: opacity .25s;
         }
         .panel-overlay.open { opacity: 1; pointer-events: all; }
-
         .panel {
             position: fixed; top: 0; right: -520px; width: 520px; height: 100vh;
             background: var(--surface); z-index: 201;
@@ -194,7 +171,6 @@
             box-shadow: -4px 0 24px rgba(0,0,0,.12);
         }
         .panel.open { right: 0; }
-
         .panel-head {
             padding: 20px 24px 16px;
             border-bottom: 1px solid var(--border);
@@ -207,14 +183,12 @@
             background: var(--bg); color: var(--muted); cursor: pointer;
             font-size: 16px; display: flex; align-items: center; justify-content: center;
         }
-
         .panel-body { flex: 1; overflow-y: auto; padding: 20px 24px; }
         .panel-foot {
             padding: 16px 24px; border-top: 1px solid var(--border);
             display: flex; gap: 10px; flex-shrink: 0;
         }
 
-        /* ── Form elements ── */
         .form-group { margin-bottom: 16px; }
         .form-label {
             display: block; font-size: 11px; font-weight: 700;
@@ -230,10 +204,8 @@
         .form-input:focus { border-color: var(--primary); }
         textarea.form-input { resize: vertical; min-height: 72px; }
         select.form-input { cursor: pointer; }
-
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
-        /* ── Lang tabs ── */
         .lang-tabs { display: flex; gap: 4px; margin-bottom: 10px; flex-wrap: wrap; }
         .lang-tab {
             padding: 4px 10px; border-radius: 6px; border: 1.5px solid var(--border);
@@ -243,7 +215,6 @@
         }
         .lang-tab.active { background: var(--nav); color: #fff; border-color: var(--nav); }
 
-        /* ── Photo upload ── */
         .photo-upload {
             border: 2px dashed var(--border); border-radius: 10px;
             padding: 20px; text-align: center; cursor: pointer;
@@ -253,12 +224,8 @@
         .photo-upload input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
         .photo-upload-icon { font-size: 24px; color: var(--muted); margin-bottom: 6px; }
         .photo-upload-text { font-size: 12px; color: var(--muted); }
-        .photo-preview {
-            width: 80px; height: 80px; border-radius: 8px;
-            object-fit: cover; margin: 0 auto 8px; display: block;
-        }
+        .photo-preview { width: 80px; height: 80px; border-radius: 8px; object-fit: cover; margin: 0 auto 8px; display: block; }
 
-        /* ── Tag checkboxes ── */
         .tag-grid { display: flex; flex-wrap: wrap; gap: 6px; }
         .tag-check { display: none; }
         .tag-check-label {
@@ -266,11 +233,8 @@
             font-size: 11px; font-weight: 600; cursor: pointer; color: var(--muted);
             transition: all .15s; user-select: none;
         }
-        .tag-check:checked + .tag-check-label {
-            background: var(--primary); border-color: var(--primary); color: #fff;
-        }
+        .tag-check:checked + .tag-check-label { background: var(--primary); border-color: var(--primary); color: #fff; }
 
-        /* ── Toggle row in panel ── */
         .toggle-row {
             display: flex; align-items: center; justify-content: space-between;
             padding: 10px 0; border-bottom: 1px solid var(--border);
@@ -279,7 +243,6 @@
         .toggle-label { font-size: 13px; font-weight: 600; color: var(--text); }
         .toggle-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
 
-        /* ── Section divider in panel ── */
         .panel-section { margin-bottom: 20px; }
         .panel-section-title {
             font-size: 11px; font-weight: 700; color: var(--muted);
@@ -288,25 +251,6 @@
             border-bottom: 1px solid var(--border);
         }
 
-        /* ── Modifiers in panel ── */
-        .mod-group {
-            background: var(--bg); border-radius: 8px; padding: 12px;
-            margin-bottom: 8px;
-        }
-        .mod-group-head {
-            display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: 8px;
-        }
-        .mod-group-name { font-size: 12px; font-weight: 700; color: var(--text); }
-        .mod-item {
-            display: flex; align-items: center; gap: 8px;
-            padding: 6px 0; border-bottom: 1px solid var(--border);
-            font-size: 12px; color: var(--text);
-        }
-        .mod-item:last-child { border-bottom: none; }
-        .mod-price { margin-left: auto; color: var(--muted); font-size: 11px; }
-
-        /* ── Category modal ── */
         .modal-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,.4);
             z-index: 300; display: flex; align-items: center; justify-content: center;
@@ -323,11 +267,7 @@
         .modal-title { font-size: 15px; font-weight: 700; margin-bottom: 16px; }
         .modal-foot { display: flex; gap: 8px; margin-top: 16px; justify-content: flex-end; }
 
-        .empty-cat {
-            padding: 20px 16px; text-align: center;
-            color: var(--muted); font-size: 12px;
-            border-bottom: none;
-        }
+        .empty-cat { padding: 20px 16px; text-align: center; color: var(--muted); font-size: 12px; }
 
         .toast {
             position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
@@ -336,6 +276,14 @@
             z-index: 500; transition: transform .3s; pointer-events: none;
         }
         .toast.show { transform: translateX(-50%) translateY(0); }
+
+        /* mod panel option row */
+        .opt-row {
+            display: flex; gap: 6px; align-items: center; margin-bottom: 6px;
+        }
+        .opt-row input { font-family: 'Poppins', sans-serif; padding: 7px 10px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 12px; color: var(--text); background: var(--surface); outline: none; }
+        .opt-row input:focus { border-color: var(--primary); }
+        .opt-del { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 16px; padding: 4px 6px; line-height: 1; }
     </style>
 </head>
 <body>
@@ -343,18 +291,10 @@
 <nav class="nav">
     <div class="nav-brand">🐘 Sabaidee</div>
     <div class="nav-tabs">
-        <a href="/admin/dashboard" class="nav-tab">
-            <span class="lo">ໜ້າຫຼັກ</span><span class="en">Dashboard</span>
-        </a>
-        <a href="/admin/analytics" class="nav-tab">
-            <span class="lo">ສະຖິຕິ</span><span class="en">Analytics</span>
-        </a>
-        <a href="/admin/menu" class="nav-tab active">
-            <span class="lo">ເມນູ</span><span class="en">Menu</span>
-        </a>
-        <a href="/admin/qr-tables" class="nav-tab">
-            <span class="lo">QR ໂຕະ</span><span class="en">QR Tables</span>
-        </a>
+        <a href="/admin/dashboard" class="nav-tab"><span class="lo">ໜ້າຫຼັກ</span><span class="en">Dashboard</span></a>
+        <a href="/admin/analytics" class="nav-tab"><span class="lo">ສະຖິຕິ</span><span class="en">Analytics</span></a>
+        <a href="/admin/menu" class="nav-tab active"><span class="lo">ເມນູ</span><span class="en">Menu</span></a>
+        <a href="/admin/qr-tables" class="nav-tab"><span class="lo">QR ໂຕະ</span><span class="en">QR Tables</span></a>
     </div>
 </nav>
 
@@ -365,12 +305,14 @@
             <button class="btn btn-outline" onclick="openCatModal()">
                 <i class="bi bi-folder-plus"></i> New Category
             </button>
+            <button class="btn btn-outline" onclick="openModPanel()">
+                <i class="bi bi-sliders"></i> Modifier Groups
+            </button>
             <button class="btn btn-primary" onclick="openDishPanel(null)">
                 <i class="bi bi-plus-lg"></i> Add Item
             </button>
         </div>
     </div>
-
     <div id="menu-list">
         <div style="text-align:center;padding:40px;color:var(--muted)">Loading...</div>
     </div>
@@ -384,8 +326,6 @@
         <button class="panel-close" onclick="closePanel()">✕</button>
     </div>
     <div class="panel-body">
-
-        <!-- Photo -->
         <div class="panel-section">
             <div class="panel-section-title">Photo</div>
             <div class="photo-upload" onclick="document.getElementById('photo-input').click()">
@@ -398,7 +338,6 @@
             <input type="hidden" id="f-photo-url">
         </div>
 
-        <!-- Names & Descriptions -->
         <div class="panel-section">
             <div class="panel-section-title">Name & Description</div>
             <div class="lang-tabs" id="lang-tabs">
@@ -419,7 +358,6 @@
             </div>
         </div>
 
-        <!-- Pricing & Category -->
         <div class="panel-section">
             <div class="panel-section-title">Pricing & Category</div>
             <div class="form-row">
@@ -438,7 +376,6 @@
             </div>
         </div>
 
-        <!-- Dietary tags -->
         <div class="panel-section">
             <div class="panel-section-title">Dietary Tags</div>
             <div class="tag-grid" id="dietary-tags">
@@ -457,7 +394,6 @@
             </div>
         </div>
 
-        <!-- Allergens -->
         <div class="panel-section">
             <div class="panel-section-title">Allergens</div>
             <div class="tag-grid">
@@ -476,51 +412,86 @@
             </div>
         </div>
 
-        <!-- Toggles -->
         <div class="panel-section">
             <div class="panel-section-title">Visibility & Badges</div>
             <div class="toggle-row">
-                <div>
-                    <div class="toggle-label">Active</div>
-                    <div class="toggle-sub">Dish exists in menu</div>
-                </div>
+                <div><div class="toggle-label">Active</div><div class="toggle-sub">Dish exists in menu</div></div>
                 <label class="tog"><input type="checkbox" id="f-active" checked><span class="tog-slider"></span></label>
             </div>
             <div class="toggle-row">
-                <div>
-                    <div class="toggle-label">Available now</div>
-                    <div class="toggle-sub">Stop-list toggle</div>
-                </div>
+                <div><div class="toggle-label">Available now</div><div class="toggle-sub">Stop-list toggle</div></div>
                 <label class="tog"><input type="checkbox" id="f-available" checked><span class="tog-slider"></span></label>
             </div>
             <div class="toggle-row">
-                <div>
-                    <div class="toggle-label">NEW badge</div>
-                    <div class="toggle-sub">Show NEW ribbon on card</div>
-                </div>
+                <div><div class="toggle-label">NEW badge</div><div class="toggle-sub">Show NEW ribbon on card</div></div>
                 <label class="tog"><input type="checkbox" id="f-is-new" class="tog-orange"><span class="tog-slider"></span></label>
             </div>
             <div class="toggle-row">
-                <div>
-                    <div class="toggle-label">Surprise eligible</div>
-                    <div class="toggle-sub">Can appear in Surprise Me</div>
-                </div>
+                <div><div class="toggle-label">Surprise eligible</div><div class="toggle-sub">Can appear in Surprise Me</div></div>
                 <label class="tog"><input type="checkbox" id="f-surprise" class="tog-primary"><span class="tog-slider"></span></label>
             </div>
         </div>
 
-        <!-- Modifiers -->
         <div class="panel-section">
             <div class="panel-section-title">Modifiers</div>
             <div class="tag-grid" id="mod-list"></div>
         </div>
-
     </div>
     <div class="panel-foot">
         <button class="btn btn-primary" style="flex:1" onclick="saveDish()">
             <i class="bi bi-check-lg"></i> Save
         </button>
         <button class="btn btn-outline" onclick="closePanel()">Cancel</button>
+    </div>
+</div>
+
+<!-- ── Modifier groups panel ── -->
+<div class="panel-overlay" id="mod-panel-overlay" onclick="closeModPanel()"></div>
+<div class="panel" id="mod-panel" style="width:500px;max-width:95vw">
+    <div class="panel-head">
+        <div class="panel-title">Modifier Groups</div>
+        <button class="panel-close" onclick="closeModPanel()">✕</button>
+    </div>
+    <div class="panel-body">
+        <div id="mod-groups-list"></div>
+
+        <button class="btn btn-outline" style="width:100%;margin-top:12px" onclick="openNewGroupForm()">
+            <i class="bi bi-plus-lg"></i> New Group
+        </button>
+
+        <div id="group-form" style="display:none;margin-top:20px;border-top:1px solid var(--border);padding-top:20px">
+            <div class="panel-section-title" id="group-form-title">New Group</div>
+            <input type="hidden" id="gf-id">
+
+            <div class="lang-tabs" id="gf-lang-tabs">
+                <button class="lang-tab active" data-lang="en" onclick="switchGfLang(this)">EN</button>
+                <button class="lang-tab" data-lang="lo" onclick="switchGfLang(this)">LO</button>
+                <button class="lang-tab" data-lang="cn" onclick="switchGfLang(this)">CN</button>
+                <button class="lang-tab" data-lang="ru" onclick="switchGfLang(this)">RU</button>
+                <button class="lang-tab" data-lang="th" onclick="switchGfLang(this)">TH</button>
+                <button class="lang-tab" data-lang="ko" onclick="switchGfLang(this)">KO</button>
+                <button class="lang-tab" data-lang="fr" onclick="switchGfLang(this)">FR</button>
+                <button class="lang-tab" data-lang="ar" onclick="switchGfLang(this)">AR</button>
+            </div>
+            <div id="gf-name-fields" class="form-group"></div>
+
+            <label style="display:flex;align-items:center;gap:8px;margin-bottom:16px;font-size:13px;cursor:pointer">
+                <input type="checkbox" id="gf-required"> Required (guest must choose)
+            </label>
+
+            <div class="panel-section-title">Options</div>
+            <div id="gf-options"></div>
+            <button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="addOptionRow()">
+                <i class="bi bi-plus"></i> Add option
+            </button>
+
+            <div style="display:flex;gap:8px;margin-top:20px">
+                <button class="btn btn-primary" style="flex:1" onclick="saveGroup()">
+                    <i class="bi bi-check-lg"></i> Save Group
+                </button>
+                <button class="btn btn-outline" onclick="cancelGroupForm()">Cancel</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -551,11 +522,12 @@
     const LANGS = ['en','lo','ru','zh','th','ko','fr','ar'];
     const LANG_MAP = { en:'name_en', lo:'name_lo', ru:'name_ru', zh:'name_cn', th:'name_th', ko:'name_ko', fr:'name_fr', ar:'name_ar' };
     const DESC_MAP = { en:'desc_en', lo:'desc_lo', ru:'desc_ru', zh:'desc_cn', th:'desc_th', ko:'desc_ko', fr:'desc_fr', ar:'desc_ar' };
+    const MOD_LANGS = ['en','lo','cn','ru','th','ko','fr','ar'];
 
     let menuData = [];
     let currentDish = null;
     let currentLang = 'en';
-    let langBuffer = {}; // { en: {name, desc}, lo: {name, desc}, ... }
+    let langBuffer = {};
 
     // ── Toast ──
     function showToast(msg) {
@@ -563,6 +535,10 @@
         t.textContent = msg;
         t.classList.add('show');
         setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    function esc(str) {
+        return (str || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
 
     // ── Load menu ──
@@ -576,7 +552,7 @@
     function renderMenu() {
         const list = document.getElementById('menu-list');
         if (!menuData.length) {
-            list.innerHTML = `<div style="text-align:center;padding:60px;color:var(--muted)">No categories yet. Create one to start.</div>`;
+            list.innerHTML = `<div style="text-align:center;padding:60px;color:var(--muted)">No categories yet.</div>`;
             return;
         }
         list.innerHTML = menuData.map(cat => renderCategory(cat)).join('');
@@ -589,12 +565,12 @@
             <div class="cat-header cat-header-expanded">
                 <span class="cat-toggle open" onclick="toggleCat(${cat.id}, this)">▶</span>
                 <div class="cat-name-wrap">
-                    <span class="cat-name">${cat.name_en || '–'}</span>
-                    ${cat.name_lo ? `<span class="cat-name-lo">${cat.name_lo}</span>` : ''}
+                    <span class="cat-name">${esc(cat.name_en) || '–'}</span>
+                    ${cat.name_lo ? `<span class="cat-name-lo">${esc(cat.name_lo)}</span>` : ''}
                     <span class="cat-count">${dishes.length}</span>
                 </div>
                 <div class="cat-actions">
-                    <button class="btn btn-outline btn-sm" onclick="openCatEditModal(${cat.id}, '${(cat.name_en||'').replace(/'/g,"\\'")}', '${(cat.name_lo||'').replace(/'/g,"\\'")}')">
+                    <button class="btn btn-outline btn-sm" onclick="openCatEditModal(${cat.id}, ${JSON.stringify(cat.name_en||'')}, ${JSON.stringify(cat.name_lo||'')})">
                         <i class="bi bi-pencil"></i>
                     </button>
                     <button class="btn btn-danger btn-sm" onclick="deleteCategory(${cat.id})">
@@ -604,10 +580,7 @@
             </div>
             <div class="dish-table" id="cat-body-${cat.id}">
                 <div class="dish-table-head">
-                    <div></div>
-                    <div>Item</div>
-                    <div>Price</div>
-                    <div>Category</div>
+                    <div></div><div>Item</div><div>Price</div><div>Category</div>
                     <div style="text-align:center">Active</div>
                     <div style="text-align:center">Avail.</div>
                     <div style="text-align:center">NEW</div>
@@ -617,7 +590,7 @@
                 ${dishes.length ? dishes.map(d => renderDishRow(d, cat)).join('') : `<div class="empty-cat">No dishes yet</div>`}
                 <div class="add-dish-row">
                     <button class="add-dish-btn" onclick="openDishPanel(null, ${cat.id})">
-                        <i class="bi bi-plus-circle"></i> Add dish to ${cat.name_en}
+                        <i class="bi bi-plus-circle"></i> Add dish to ${esc(cat.name_en)}
                     </button>
                 </div>
             </div>
@@ -626,34 +599,24 @@
 
     function renderDishRow(d, cat) {
         const photo = d.photo_url
-            ? `<div class="dish-thumb"><img src="${d.photo_url}" alt=""></div>`
+            ? `<div class="dish-thumb"><img src="${esc(d.photo_url)}" alt=""></div>`
             : `<div class="dish-thumb">🍽️</div>`;
-
         const price = d.discount_price
             ? `<div class="dish-price-old">${fmtPrice(d.price)}</div><div class="dish-price">${fmtPrice(d.discount_price)}</div>`
             : `<div class="dish-price">${fmtPrice(d.price)}</div>`;
-
         return `
         <div class="dish-row" id="dish-row-${d.id}">
             ${photo}
             <div class="dish-info">
-                <div class="dish-name">${d.name_en || '–'}</div>
-                ${d.name_lo ? `<div class="dish-name-lo">${d.name_lo}</div>` : ''}
+                <div class="dish-name">${esc(d.name_en) || '–'}</div>
+                ${d.name_lo ? `<div class="dish-name-lo">${esc(d.name_lo)}</div>` : ''}
             </div>
             <div>${price}</div>
-            <div style="font-size:11px;color:var(--muted)">${cat.name_en}</div>
-            <div class="tog-wrap">
-                <label class="tog"><input type="checkbox" class="tog-green" ${d.active ? 'checked' : ''} onchange="patchDish(${d.id}, {active: this.checked})"><span class="tog-slider"></span></label>
-            </div>
-            <div class="tog-wrap">
-                <label class="tog"><input type="checkbox" ${d.is_available ? 'checked' : ''} onchange="patchDish(${d.id}, {is_available: this.checked})"><span class="tog-slider"></span></label>
-            </div>
-            <div class="tog-wrap">
-                <label class="tog"><input type="checkbox" class="tog-orange" ${d.is_new ? 'checked' : ''} onchange="patchDish(${d.id}, {is_new: this.checked})"><span class="tog-slider"></span></label>
-            </div>
-            <div class="tog-wrap">
-                <label class="tog"><input type="checkbox" class="tog-primary" ${d.is_surprise_eligible ? 'checked' : ''} onchange="patchDish(${d.id}, {is_surprise_eligible: this.checked})"><span class="tog-slider"></span></label>
-            </div>
+            <div style="font-size:11px;color:var(--muted)">${esc(cat.name_en)}</div>
+            <div class="tog-wrap"><label class="tog"><input type="checkbox" ${d.active ? 'checked' : ''} onchange="patchDish(${d.id}, {active: this.checked})"><span class="tog-slider"></span></label></div>
+            <div class="tog-wrap"><label class="tog"><input type="checkbox" ${d.is_available ? 'checked' : ''} onchange="patchDish(${d.id}, {is_available: this.checked})"><span class="tog-slider"></span></label></div>
+            <div class="tog-wrap"><label class="tog"><input type="checkbox" class="tog-orange" ${d.is_new ? 'checked' : ''} onchange="patchDish(${d.id}, {is_new: this.checked})"><span class="tog-slider"></span></label></div>
+            <div class="tog-wrap"><label class="tog"><input type="checkbox" class="tog-primary" ${d.is_surprise_eligible ? 'checked' : ''} onchange="patchDish(${d.id}, {is_surprise_eligible: this.checked})"><span class="tog-slider"></span></label></div>
             <div class="dish-actions">
                 <button class="icon-btn" onclick="openDishPanel(${d.id})" title="Edit"><i class="bi bi-pencil"></i></button>
                 <button class="icon-btn danger" onclick="deleteDish(${d.id})" title="Delete"><i class="bi bi-trash"></i></button>
@@ -670,17 +633,14 @@
         if (isOpen) {
             body.style.display = 'none';
             el.classList.remove('open');
-            header.classList.remove('cat-header-expanded');
-            header.classList.add('cat-header-collapsed');
+            header.classList.replace('cat-header-expanded', 'cat-header-collapsed');
         } else {
             body.style.display = '';
             el.classList.add('open');
-            header.classList.add('cat-header-expanded');
-            header.classList.remove('cat-header-collapsed');
+            header.classList.replace('cat-header-collapsed', 'cat-header-expanded');
         }
     }
 
-    // ── Patch dish toggles inline ──
     async function patchDish(dishId, data) {
         await fetch(`/api/admin/dish/${dishId}`, {
             method: 'PATCH',
@@ -689,7 +649,6 @@
         });
     }
 
-    // ── Delete dish ──
     async function deleteDish(dishId) {
         if (!confirm('Delete this dish?')) return;
         await fetch(`/api/admin/dish/${dishId}`, { method: 'DELETE' });
@@ -697,7 +656,6 @@
         loadMenu();
     }
 
-    // ── Delete category ──
     async function deleteCategory(catId) {
         if (!confirm('Delete category and all its dishes?')) return;
         await fetch(`/api/admin/category/${catId}`, { method: 'DELETE' });
@@ -705,7 +663,7 @@
         loadMenu();
     }
 
-    // ── Panel ──
+    // ── Dish Panel ──
     function openDishPanel(dishId, defaultCatId = null) {
         currentDish = dishId ? findDish(dishId) : null;
         langBuffer = {};
@@ -722,8 +680,6 @@
         document.getElementById('photo-preview-wrap').innerHTML = `
             <div class="photo-upload-icon"><i class="bi bi-image"></i></div>
             <div class="photo-upload-text">Click to upload · max 2MB</div>`;
-
-        // clear tags
         document.querySelectorAll('.tag-check').forEach(c => c.checked = false);
 
         if (currentDish) {
@@ -740,29 +696,23 @@
             if (currentDish.photo_url) {
                 document.getElementById('f-photo-url').value = currentDish.photo_url;
                 document.getElementById('photo-preview-wrap').innerHTML =
-                    `<img src="${currentDish.photo_url}" class="photo-preview" alt="">`;
+                    `<img src="${esc(currentDish.photo_url)}" class="photo-preview" alt="">`;
             }
             (currentDish.dietary_tags || []).forEach(t => {
-                const el = document.getElementById(`dt-${t}`);
-                if (el) el.checked = true;
+                const el = document.getElementById(`dt-${t}`); if (el) el.checked = true;
             });
             (currentDish.allergens || []).forEach(t => {
-                const el = document.getElementById(`al-${t}`);
-                if (el) el.checked = true;
+                const el = document.getElementById(`al-${t}`); if (el) el.checked = true;
             });
-            // modifiers
             loadAndRenderModifiers(currentDish.id);
         } else {
             loadAllModifierGroups();
         }
 
-        // set default lang
         currentLang = 'en';
-        document.querySelectorAll('.lang-tab').forEach(t => t.classList.remove('active'));
-        document.querySelector('.lang-tab').classList.add('active');
+        document.querySelectorAll('#lang-tabs .lang-tab').forEach((t, i) => t.classList.toggle('active', i === 0));
         updateLangFields();
 
-        // set category
         const catSel = document.getElementById('f-category');
         if (currentDish) catSel.value = currentDish.category_id;
         else if (defaultCatId) catSel.value = defaultCatId;
@@ -777,11 +727,10 @@
     }
 
     function switchLang(lang, btn) {
-        // save current before switching
         langBuffer[currentLang].name = document.getElementById('f-name').value;
         langBuffer[currentLang].desc = document.getElementById('f-desc').value;
         currentLang = lang;
-        document.querySelectorAll('.lang-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('#lang-tabs .lang-tab').forEach(t => t.classList.remove('active'));
         btn.classList.add('active');
         updateLangFields();
     }
@@ -793,9 +742,7 @@
 
     function populateCategorySelect() {
         const sel = document.getElementById('f-category');
-        sel.innerHTML = menuData.map(c =>
-            `<option value="${c.id}">${c.name_en}</option>`
-        ).join('');
+        sel.innerHTML = menuData.map(c => `<option value="${c.id}">${esc(c.name_en)}</option>`).join('');
     }
 
     function findDish(dishId) {
@@ -807,12 +754,12 @@
     }
 
     async function saveDish() {
-        // flush current lang
         langBuffer[currentLang].name = document.getElementById('f-name').value;
         langBuffer[currentLang].desc = document.getElementById('f-desc').value;
 
         const dietary_tags = [...document.querySelectorAll('#dietary-tags .tag-check:checked')].map(c => c.value);
         const allergens = [...document.querySelectorAll('.tag-check[id^="al-"]:checked')].map(c => c.value);
+        const group_ids = [...document.querySelectorAll('#mod-list .tag-check:checked')].map(c => parseInt(c.value));
 
         const payload = {
             category_id: parseInt(document.getElementById('f-category').value),
@@ -826,17 +773,18 @@
             dietary_tags,
             allergens,
         };
-
         LANGS.forEach(l => {
             payload[LANG_MAP[l]] = langBuffer[l].name || null;
             payload[DESC_MAP[l]] = langBuffer[l].desc || null;
         });
-        // zh fix
+        // zh → cn fix
         payload['name_cn'] = langBuffer['zh'].name || null;
         payload['desc_cn'] = langBuffer['zh'].desc || null;
 
+        let dishId = currentDish ? currentDish.id : null;
+
         if (currentDish) {
-            await fetch(`/api/admin/dish/${currentDish.id}`, {
+            await fetch(`/api/admin/dish/${dishId}`, {
                 method: 'PATCH',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(payload)
@@ -849,31 +797,21 @@
                 body: JSON.stringify(payload)
             });
             const created = await res.json();
-            const group_ids = [...document.querySelectorAll('#mod-list .tag-check:checked')].map(c => parseInt(c.value));
-            if (group_ids.length) {
-                await fetch(`/api/admin/dish/${created.id}/modifiers`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({group_ids})
-                });
-            }
+            dishId = created.id;
             showToast('Dish created ✓');
         }
 
-        if (currentDish) {
-            const group_ids = [...document.querySelectorAll('#mod-list .tag-check:checked')].map(c => parseInt(c.value));
-            await fetch(`/api/admin/dish/${currentDish.id}/modifiers`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({group_ids})
-            });
-        }
+        // всегда синхронизируем модификаторы (и при создании, и при редактировании)
+        await fetch(`/api/admin/dish/${dishId}/modifiers`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ group_ids })
+        });
 
         closePanel();
         loadMenu();
     }
 
-    // ── Photo upload ──
     async function handlePhoto(input) {
         const file = input.files[0];
         if (!file) return;
@@ -884,13 +822,13 @@
             const data = await res.json();
             document.getElementById('f-photo-url').value = data.url;
             document.getElementById('photo-preview-wrap').innerHTML =
-                `<img src="${data.url}" class="photo-preview" alt="">`;
+                `<img src="${esc(data.url)}" class="photo-preview" alt="">`;
         } else {
             showToast('Upload failed');
         }
     }
 
-    // ── Modifiers (read-only for now) ──
+    // ── Modifier checkboxes in dish panel ──
     let allModifierGroups = [];
     let linkedGroupIds = new Set();
 
@@ -915,14 +853,14 @@
     function renderModifierCheckboxes() {
         const el = document.getElementById('mod-list');
         if (!allModifierGroups.length) {
-            el.innerHTML = `<div style="font-size:12px;color:var(--muted)">No modifier groups yet.</div>`;
+            el.innerHTML = `<div style="font-size:12px;color:var(--muted)">No modifier groups yet. Create them via "Modifier Groups".</div>`;
             return;
         }
         el.innerHTML = allModifierGroups.map(g => `
             <input type="checkbox" class="tag-check" id="mg-${g.id}" value="${g.id}" ${linkedGroupIds.has(g.id) ? 'checked' : ''}>
             <label class="tag-check-label" for="mg-${g.id}">
-                ${g.name_en}${g.required ? ' *' : ''}
-                <span style="font-size:10px;opacity:.6;margin-left:4px">${g.modifiers.map(m => (m.emoji || '') + ' ' + m.label_en).join(', ')}</span>
+                ${esc(g.name_en)}${g.required ? ' *' : ''}
+                <span style="font-size:10px;opacity:.6;margin-left:4px">${g.modifiers.map(m => esc((m.emoji || '') + ' ' + m.label_en)).join(', ')}</span>
             </label>
         `).join('');
     }
@@ -944,9 +882,7 @@
         document.getElementById('cat-modal').classList.add('open');
     }
 
-    function closeCatModal() {
-        document.getElementById('cat-modal').classList.remove('open');
-    }
+    function closeCatModal() { document.getElementById('cat-modal').classList.remove('open'); }
 
     async function saveCategory() {
         const nameEn = document.getElementById('cat-name-en').value.trim();
@@ -957,23 +893,186 @@
             name_lo: document.getElementById('cat-name-lo').value.trim() || null,
             restaurant_id: RESTAURANT_ID,
         };
-        if (editId) {
-            await fetch(`/api/admin/category/${editId}`, {
-                method: 'PATCH',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(payload)
-            });
-            showToast('Category updated ✓');
-        } else {
-            await fetch('/api/admin/category', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(payload)
-            });
-            showToast('Category created ✓');
-        }
+        const url = editId ? `/api/admin/category/${editId}` : '/api/admin/category';
+        const method = editId ? 'PATCH' : 'POST';
+        await fetch(url, { method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+        showToast(editId ? 'Category updated ✓' : 'Category created ✓');
         closeCatModal();
         loadMenu();
+    }
+
+    // ── Modifier Groups Panel ──
+    let modGroups = [];
+    let _gfLang = 'en';
+    const _gfNames = {};
+    let _options = [];
+
+    function openModPanel() {
+        loadModGroups();
+        document.getElementById('mod-panel-overlay').classList.add('open');
+        document.getElementById('mod-panel').classList.add('open');
+    }
+
+    function closeModPanel() {
+        document.getElementById('mod-panel-overlay').classList.remove('open');
+        document.getElementById('mod-panel').classList.remove('open');
+        cancelGroupForm();
+    }
+
+    async function loadModGroups() {
+        const res = await fetch(`/api/admin/modifier-groups/${RESTAURANT_ID}`);
+        modGroups = await res.json();
+        renderModGroupsList();
+    }
+
+    function renderModGroupsList() {
+        const el = document.getElementById('mod-groups-list');
+        if (!modGroups.length) {
+            el.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:8px 0">No groups yet.</div>';
+            return;
+        }
+        el.innerHTML = modGroups.map(g => `
+            <div style="border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+                    <div style="flex:1;min-width:0">
+                        <div style="font-size:13px;font-weight:700">${esc(g.name_en)}${g.required ? ' <span style="color:#ef4444;font-size:11px;font-weight:400">required</span>' : ''}</div>
+                        <div style="font-size:11px;color:var(--muted);margin-top:4px">${g.modifiers.map(m => esc((m.emoji || '') + ' ' + m.label_en) + (m.price_add ? ' +' + m.price_add : '')).join(' · ') || '<em>no options</em>'}</div>
+                    </div>
+                    <div style="display:flex;gap:6px;flex-shrink:0">
+                        <button class="btn btn-outline btn-sm" onclick="editGroup(${g.id})"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteGroup(${g.id})"><i class="bi bi-trash"></i></button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function switchGfLang(btn) {
+        saveGfName(_gfLang);   // сохранить текущий инпут ДО перерендера
+        _gfLang = btn.dataset.lang;
+        document.querySelectorAll('#gf-lang-tabs .lang-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderGfNameFields();
+    }
+
+    function renderGfNameFields() {
+        const val = esc(getGfName(_gfLang));
+        document.getElementById('gf-name-fields').innerHTML = `
+            <input id="gf-name-${_gfLang}" class="form-input" placeholder="Group name (${_gfLang.toUpperCase()})" value="${val}">
+        `;
+    }
+
+    function getGfName(lang) { return _gfNames[lang] || ''; }
+
+    function saveGfName(lang) {
+        const el = document.getElementById(`gf-name-${lang}`);
+        if (el) _gfNames[lang] = el.value;
+    }
+
+    function flushGfNames() {
+        // сохраняет активный инпут
+        saveGfName(_gfLang);
+    }
+
+    function addOptionRow(opt) {
+        _options.push({
+            id: opt?.id || null,
+            emoji: opt?.emoji || '',
+            price_add: opt?.price_add || 0,
+            labels: Object.fromEntries(MOD_LANGS.map(l => [l, opt ? (opt[`label_${l}`] || '') : '']))
+        });
+        renderOptions();
+    }
+
+    function renderOptions() {
+        document.getElementById('gf-options').innerHTML = _options.map((o, i) => `
+            <div class="opt-row">
+                <input placeholder="😊" style="width:48px;text-align:center" value="${esc(o.emoji)}"
+                       onchange="updateOption(${i},'emoji',this.value)">
+                <input placeholder="Label (EN)" style="flex:1" value="${esc(o.labels.en)}"
+                       onchange="updateOptionLabel(${i},'en',this.value)">
+                <input placeholder="+₭" type="number" min="0" style="width:72px" value="${o.price_add}"
+                       onchange="updateOption(${i},'price_add',+this.value)">
+                <button class="opt-del" onclick="removeOption(${i})" title="Remove">✕</button>
+            </div>
+        `).join('');
+    }
+
+    function updateOption(idx, field, val) { _options[idx][field] = val; }
+    function updateOptionLabel(idx, lang, val) { _options[idx].labels[lang] = val; }
+    function removeOption(idx) { _options.splice(idx, 1); renderOptions(); }
+
+    function openNewGroupForm() {
+        document.getElementById('gf-id').value = '';
+        document.getElementById('group-form-title').textContent = 'New Group';
+        MOD_LANGS.forEach(l => _gfNames[l] = '');
+        _gfLang = 'en';
+        document.querySelectorAll('#gf-lang-tabs .lang-tab').forEach(b => b.classList.toggle('active', b.dataset.lang === 'en'));
+        document.getElementById('gf-required').checked = false;
+        _options = [];
+        renderGfNameFields();
+        renderOptions();
+        document.getElementById('group-form').style.display = 'block';
+        document.getElementById('group-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function editGroup(groupId) {
+        const g = modGroups.find(x => x.id === groupId);
+        if (!g) return;
+        document.getElementById('gf-id').value = g.id;
+        document.getElementById('group-form-title').textContent = 'Edit Group';
+        MOD_LANGS.forEach(l => _gfNames[l] = g[`name_${l}`] || '');
+        _gfLang = 'en';
+        document.querySelectorAll('#gf-lang-tabs .lang-tab').forEach(b => b.classList.toggle('active', b.dataset.lang === 'en'));
+        document.getElementById('gf-required').checked = g.required;
+        _options = [];
+        g.modifiers.forEach(m => addOptionRow(m));
+        renderGfNameFields();
+        document.getElementById('group-form').style.display = 'block';
+        document.getElementById('group-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function cancelGroupForm() {
+        document.getElementById('group-form').style.display = 'none';
+        MOD_LANGS.forEach(l => _gfNames[l] = '');
+        _options = [];
+    }
+
+    async function saveGroup() {
+        flushGfNames();
+        const name_en = (_gfNames['en'] || '').trim();
+        if (!name_en) { showToast('English name required'); return; }
+        const editId = document.getElementById('gf-id').value;
+
+        const payload = {
+            restaurant_id: RESTAURANT_ID,
+            required: document.getElementById('gf-required').checked,
+            ...Object.fromEntries(MOD_LANGS.map(l => [`name_${l}`, _gfNames[l] || name_en])),
+            modifiers: _options.map(o => ({
+                ...(o.id ? { id: o.id } : {}),
+                emoji: o.emoji || null,
+                price_add: o.price_add || 0,
+                ...Object.fromEntries(MOD_LANGS.map(l => [`label_${l}`, o.labels[l] || o.labels['en'] || ''])),
+            })),
+        };
+
+        const url = editId ? `/api/admin/modifier-group/${editId}` : '/api/admin/modifier-group';
+        const method = editId ? 'PATCH' : 'POST';
+        const res = await fetch(url, { method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+        if (!res.ok) { showToast('Error saving group'); return; }
+
+        showToast(editId ? 'Group updated ✓' : 'Group created ✓');
+        cancelGroupForm();
+        await loadModGroups();
+        await loadAllModifierGroups();  // обновить чекбоксы в dish panel
+    }
+
+    async function deleteGroup(groupId) {
+        if (!confirm('Delete this group? It will be unlinked from all dishes.')) return;
+        await fetch(`/api/admin/modifier-group/${groupId}`, { method: 'DELETE' });
+        showToast('Deleted');
+        await loadModGroups();
+        await loadAllModifierGroups();
     }
 
     loadMenu();
