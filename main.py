@@ -1,8 +1,8 @@
-import base64
+# import base64 - Auth
 import html
 import json
 import os
-import secrets
+# import secrets - Auth
 import shutil
 import uuid
 from collections import defaultdict
@@ -10,7 +10,7 @@ from datetime import datetime, timedelta, timezone
 
 import httpx
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, Response, UploadFile
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile  # , Response  - Auth
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -68,23 +68,6 @@ async def send_telegram(text: str):
             print(f"TG error: {e}")
 
 
-# def build_modifier_label(item: OrderItemDB, lang: str) -> str:
-#     if not item.modifiers_json or not item.dish:
-#         return ""
-#     try:
-#         mods = json.loads(item.modifiers_json)
-#     except Exception:
-#         return ""
-#     lf = lang_field(lang)
-#     labels = []
-#     for mg in item.dish.modifier_groups:
-#         mod_id = mods.get(str(mg.id))
-#         if mod_id:
-#             mod = next((m for m in mg.modifiers if str(m.id) == str(mod_id)), None)
-#             if mod:
-#                 label = getattr(mod, f"label_{lf}", None) or mod.label_en
-#                 labels.append((mod.emoji or "") + " " + label)
-#     return ", ".join(labels)
 def build_modifier_label(item: OrderItemDB, lang: str) -> str:
     if not item.modifiers_json or not item.dish:
         return ""
@@ -114,6 +97,20 @@ def build_modifier_label(item: OrderItemDB, lang: str) -> str:
     return ", ".join(labels)
 
 
+def group_to_dict(g: ModifierGroupDB) -> dict:
+    d = {"id": g.id, "required": g.required}
+    for l in MOD_LANGS:
+        d[f"name_{l}"] = getattr(g, f"name_{l}")
+    d["modifiers"] = [
+        {
+            "id": m.id, "emoji": m.emoji, "price_add": m.price_add,
+            **{f"label_{l}": getattr(m, f"label_{l}") for l in MOD_LANGS},
+        }
+        for m in g.modifiers
+    ]
+    return d
+
+
 # ─── Customer Routes ───
 
 @app.get("/menu/{restaurant_id}/{table_id}", response_class=HTMLResponse)
@@ -134,12 +131,6 @@ async def menu(
         CategoryDB.restaurant_id == restaurant_id
     ).order_by(CategoryDB.sort_order).all()
 
-    # dishes = db.query(DishDB).options(
-    #     joinedload(DishDB.modifier_links).joinedload(ModifierGroupDB.modifiers)
-    # ).filter(
-    #     DishDB.category_id.in_([c.id for c in categories]),
-    #     DishDB.active == True
-    # ).order_by(DishDB.sort_order).all()
     dishes = db.query(DishDB).options(
         joinedload(DishDB.modifier_links)
         .joinedload(DishModifierGroup.group)
@@ -168,26 +159,6 @@ async def menu(
             "desc_cn": d.desc_cn, "desc_ru": d.desc_ru,
             "desc_th": d.desc_th, "desc_ko": d.desc_ko,
             "desc_fr": d.desc_fr, "desc_ar": d.desc_ar,
-            # "modifier_groups": [
-            #     {
-            #         "id": mg.id, "dish_id": mg.dish_id,
-            #         "name_en": mg.name_en, "name_lo": mg.name_lo,
-            #         "name_cn": mg.name_cn, "name_ru": mg.name_ru,
-            #         "name_th": mg.name_th, "name_ko": mg.name_ko,
-            #         "name_fr": mg.name_fr, "name_ar": mg.name_ar,
-            #         "required": mg.required,
-            #         "modifiers": [
-            #             {
-            #                 "id": m.id, "emoji": m.emoji,
-            #                 "label_en": m.label_en, "label_lo": m.label_lo,
-            #                 "label_cn": m.label_cn, "label_ru": m.label_ru,
-            #                 "label_th": m.label_th, "label_ko": m.label_ko,
-            #                 "label_fr": m.label_fr, "label_ar": m.label_ar,
-            #                 "price_add": m.price_add
-            #             } for m in mg.modifiers
-            #         ]
-            #     } for mg in d.modifier_groups
-            # ]
             "modifier_groups": [
                 {
                     "id": link.group.id,
@@ -300,12 +271,7 @@ async def create_order(
         # считаем price_add выбранных модификаторов
         mods = item_data.get("modifiers", {})
         price_add = 0
-        # for mg in dish.modifier_groups:
-        #     mod_id = mods.get(str(mg.id))
-        #     if mod_id:
-        #         mod = next((m for m in mg.modifiers if str(m.id) == str(mod_id)), None)
-        #         if mod:
-        #             price_add += mod.price_add
+
         for link in dish.modifier_links:
             mg = link.group
 
@@ -368,10 +334,6 @@ async def order_done(
         lang: str = "en",
         db: Session = Depends(get_db)
 ):
-    # order = db.query(OrderDB).options(
-    #     joinedload(OrderDB.items).joinedload(OrderItemDB.dish).joinedload(
-    #         DishDB.modifier_links).joinedload(ModifierGroupDB.modifiers)
-    # ).filter(OrderDB.id == order_id).first()
     order = db.query(OrderDB).options(
         joinedload(OrderDB.items)
         .joinedload(OrderItemDB.dish)
@@ -478,8 +440,6 @@ async def order_status(order_id: int, db: Session = Depends(get_db)):
 @app.get("/api/admin/orders/{restaurant_id}")
 async def admin_get_orders(restaurant_id: int, db: Session = Depends(get_db)):
     orders = db.query(OrderDB).options(
-        # joinedload(OrderDB.items).joinedload(OrderItemDB.dish).joinedload(
-        #     DishDB.modifier_links).joinedload(ModifierGroupDB.modifiers),
         joinedload(OrderDB.items)
         .joinedload(OrderItemDB.dish)
         .joinedload(DishDB.modifier_links)
@@ -815,17 +775,26 @@ async def delete_category(cat_id: int, db: Session = Depends(get_db)):
 # ── GET all modifier groups for restaurant ──
 @app.get("/api/admin/modifier-groups/{restaurant_id}")
 async def get_modifier_groups(restaurant_id: int, db: Session = Depends(get_db)):
-    groups = db.query(ModifierGroupDB).filter(
-        ModifierGroupDB.restaurant_id == restaurant_id
-    ).all()
-    return [{
-        "id": g.id,
-        "name_en": g.name_en,
-        "name_lo": g.name_lo,
-        "required": g.required,
-        "modifiers": [{"id": m.id, "label_en": m.label_en, "emoji": m.emoji, "price_add": m.price_add} for m in
-                      g.modifiers]
-    } for g in groups]
+    groups = (db.query(ModifierGroupDB)
+              .options(joinedload(ModifierGroupDB.modifiers))
+              .filter(ModifierGroupDB.restaurant_id == restaurant_id)
+              .all())
+    return [group_to_dict(g) for g in groups]
+
+
+# @app.get("/api/admin/modifier-groups/{restaurant_id}")
+# async def get_modifier_groups(restaurant_id: int, db: Session = Depends(get_db)):
+#     groups = db.query(ModifierGroupDB).filter(
+#         ModifierGroupDB.restaurant_id == restaurant_id
+#     ).all()
+#     return [{
+#         "id": g.id,
+#         "name_en": g.name_en,
+#         "name_lo": g.name_lo,
+#         "required": g.required,
+#         "modifiers": [{"id": m.id, "label_en": m.label_en, "emoji": m.emoji, "price_add": m.price_add} for m in
+#                       g.modifiers]
+#     } for g in groups]
 
 
 # ── GET modifiers linked to dish ──
@@ -868,18 +837,6 @@ async def upload_photo(file: UploadFile = File(...)):
     with open(path, "wb") as f:
         shutil.copyfileobj(file.file, f)
     return {"url": f"/static/img/{filename}"}
-
-
-# @app.get("/api/admin/dish/{dish_id}/modifiers")
-# async def get_dish_modifiers(dish_id: int, db: Session = Depends(get_db)):
-#     groups = db.query(ModifierGroupDB).filter(ModifierGroupDB.dish_id == dish_id).all()
-#     return [{
-#         "id": g.id,
-#         "name_en": g.name_en,
-#         "required": g.required,
-#         "modifiers": [{"id": m.id, "label_en": m.label_en, "emoji": m.emoji, "price_add": m.price_add} for m in
-#                       g.modifiers]
-#     } for g in groups]
 
 
 @app.post("/api/request-bill/{order_id}")
@@ -943,22 +900,22 @@ async def generate_qr(restaurant_id: int, table_id: int):
     return StreamingResponse(buf, media_type="image/png")
 
 
-@app.middleware("http")
-async def admin_basic_auth(request: Request, call_next):
-    if request.url.path.startswith(("/admin", "/api/admin")):
-        ok = False
-        auth = request.headers.get("authorization", "")
-        if ADMIN_PASS and auth.startswith("Basic "):
-            try:
-                user, _, pwd = base64.b64decode(auth[6:]).decode().partition(":")
-                ok = (secrets.compare_digest(user, ADMIN_USER)
-                      and secrets.compare_digest(pwd, ADMIN_PASS))
-            except Exception:
-                ok = False
-        if not ok:
-            return Response(status_code=401,
-                            headers={"WWW-Authenticate": 'Basic realm="admin"'})
-    return await call_next(request)
+# @app.middleware("http")
+# async def admin_basic_auth(request: Request, call_next):
+#     if request.url.path.startswith(("/admin", "/api/admin")):
+#         ok = False
+#         auth = request.headers.get("authorization", "")
+#         if ADMIN_PASS and auth.startswith("Basic "):
+#             try:
+#                 user, _, pwd = base64.b64decode(auth[6:]).decode().partition(":")
+#                 ok = (secrets.compare_digest(user, ADMIN_USER)
+#                       and secrets.compare_digest(pwd, ADMIN_PASS))
+#             except Exception:
+#                 ok = False
+#         if not ok:
+#             return Response(status_code=401,
+#                             headers={"WWW-Authenticate": 'Basic realm="admin"'})
+#     return await call_next(request)
 
 
 if __name__ == "__main__":
