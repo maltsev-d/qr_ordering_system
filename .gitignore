@@ -24,3 +24,6 @@ test_image.py
 test_image.html
 qrmenu.db
 seed.py
+
+.dockerignore
+Dockerfile

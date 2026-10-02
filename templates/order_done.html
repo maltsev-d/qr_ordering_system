@@ -490,6 +490,38 @@
             margin-bottom: 12px;
         }
 
+        .bill-items {
+            width: 100%;
+            margin-bottom: 12px;
+        }
+        .bill-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 6px 0;
+            border-bottom: 1px solid var(--border, #EDE8E0);
+            font-size: 13px;
+        }
+        .bill-item:last-child { border-bottom: none; }
+        .bill-item-left { flex: 1; min-width: 0; }
+        .bill-item-name { font-weight: 600; color: var(--text, #1A1A1A); }
+        .bill-item-mod { font-size: 11px; color: var(--muted, #999); margin-top: 2px; }
+        .bill-item-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+        .bill-item-qty { font-size: 11px; color: var(--muted, #999); }
+        .bill-item-price { font-weight: 600; color: var(--text, #1A1A1A); }
+        .bill-divider {
+            width: 100%;
+            border-top: 2px solid var(--border, #EDE8E0);
+            margin: 8px 0 12px;
+        }
+
 
     </style>
 </head>
@@ -868,8 +900,27 @@
 
         {# ── Awaiting payment ── #}
         <div class="bill-card" x-show="orderStatus === 'awaiting_payment'" x-cloak>
-            <div class="bill-title" x-text="t.bill_title"></div>
-            <div class="bill-amount">{{ "{:,}".format(order.total) }} ₭</div>
+    <div class="bill-title" x-text="t.bill_title"></div>
+
+    <div class="bill-items">
+        {% for item in order.items %}
+        <div class="bill-item">
+            <div class="bill-item-left">
+                <div class="bill-item-name">{{ item.dish_name }}</div>
+                {% if item.modifier_label %}
+                <div class="bill-item-mod">{{ item.modifier_label }}</div>
+                {% endif %}
+            </div>
+            <div class="bill-item-right">
+                <span class="bill-item-qty">×{{ item.qty }}</span>
+                <span class="bill-item-price">{{ "{:,}".format(item.subtotal) }} ₭</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="bill-divider"></div>
+
+    <div class="bill-amount">{{ "{:,}".format(order.total) }} ₭</div>
             {% if restaurant.payment_qr_url %}
             <img class="bill-qr" src="{{ restaurant.payment_qr_url }}" alt="Payment QR">
             {% endif %}

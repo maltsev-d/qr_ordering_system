@@ -23,6 +23,7 @@
             --text: #1A1A1A;
             --muted: #999999;
             --nav: #1A1A2E;
+            --danger: #E53E3E;
         }
 
         body {
@@ -399,8 +400,8 @@
         }
 
         .btn-cancel {
-            background: var(--bg);
-            color: var(--muted);
+            background: var(--danger);
+            color: var(--bg);
             border: 1px solid var(--border);
             border-radius: 8px;
             padding: 9px 12px;
@@ -632,9 +633,10 @@
         <button class="btn-ready" onclick="updateStatus(${orderId}, 'ready')">🍽️ ອາຫານພ້ອມ · Ready</button>
         <button class="btn-cancel" onclick="cancelOrder(${orderId})">✕</button>
       `;
-      //  if (status === 'ready') return `
-      //  <button class="btn-done" onclick="updateStatus(${orderId}, 'done')">✔ ສໍາເລັດ · </button>
-      //`;
+        if (status === 'ready') return `
+<!--        <button class="btn-done" onclick="updateStatus(${orderId}, 'done')">✔ ສໍາເລັດ · </button>-->
+        <button class="btn-cancel" onclick="cancelOrder(${orderId})">✕</button>
+      `;
         if (status === 'awaiting_payment') return `
         <button class="btn-done" onclick="updateStatus(${orderId}, 'done')">✔ ຊໍາລະແລ້ວ · Paid</button>
         <button class="btn-cancel" onclick="cancelOrder(${orderId})">✕</button>

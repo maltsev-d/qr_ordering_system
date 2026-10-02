@@ -24,25 +24,29 @@ Frontend:    Jinja2 + Alpine.js + чистый CSS (без npm/webpack)
 ```
 qr_ordering_system/
 ├── main.py                 # FastAPI роуты, вся бизнес-логика
-├── .env                    # DATABASE_URL, TG_BOT_TOKEN, TG_CHAT_ID
+├── .env                    # DATABASE_URL, TG_BOT_TOKEN, TG_CHAT_ID, ADMIN_USER, ADMIN_PAS
+├── .gitignore
+├── README.md
+├── .dockerignore
+├── Dockerfile
+├── requirements.txt
 │
 ├── db/
 │   ├── __init__.py
 │   ├── database.py         # SQLAlchemy ORM-модели, create_tables(), get_db()
-│   ├── models.py           # Pydantic-схемы, Enum (OrderType, OrderStatus, Language)
-│   └── seed.py             # Заполнение БД демо-данными
+│   └── models.py           # Pydantic-схемы, Enum (OrderType, OrderStatus, Language)
 │
 ├── static/
-│   ├── logo.png            # Логотип ресторана (fallback → эмодзи 🍜)
 │   └── img/                # Фото блюд (12 файлов, fallback → серый блок)
 │
 └── templates/
     ├── menu.html            # Customer: язык-пикер + меню + корзина + детали блюда
-    ├── order_done.html       # Customer: подтверждение заказа + live-статус
+    ├── order_done.html      # Customer: подтверждение заказа + live-статус
     └── admin/
         ├── dashboard.html    # Admin: live-заказы + звонки официанту (poll 5 сек)
         ├── analytics.html    # Admin: аналитика (заказы, выручка, топ-блюда)
-        └── menu.html          # TODO — управление меню
+        ├── qr_tables.html    # Admin: генерация и хранение QR-кодов для столов
+        └── menu.html         # Admin: управление меню
 ```
 
 ---

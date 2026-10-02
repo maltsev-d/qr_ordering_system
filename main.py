@@ -1,25 +1,28 @@
-# import base64 - Auth
 import html
+import io
 import json
 import os
-# import secrets - Auth
 import shutil
 import uuid
 from collections import defaultdict
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 
 import httpx
+import qrcode
+import uvicorn
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile  # , Response  - Auth
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session, joinedload
 
-from db.database import (CategoryDB, DishDB, DishModifierGroup, ModifierGroupDB, OrderDB,
-                         OrderItemDB, RestaurantDB, TableDB, WaiterCallDB,
-                         create_tables, get_db)
+from db.database import (CategoryDB, DishDB, DishModifierGroup, ModifierDB, ModifierGroupDB, OrderDB, OrderItemDB,
+                         RestaurantDB, TableDB, WaiterCallDB, create_tables, get_db)
 from db.models import (CallWaiterRequest, OrderStatus, UpdateOrderStatusRequest)
+
+# import secrets - Auth
+# import base64 - Auth
 
 load_dotenv()
 
@@ -550,7 +553,6 @@ async def admin_analytics_data(
 
 @app.get("/api/admin/stats/today/{restaurant_id}")
 async def admin_stats_today(restaurant_id: int, db: Session = Depends(get_db)):
-    from datetime import date
     today_start = datetime.combine(date.today(), datetime.min.time())
     orders = db.query(OrderDB).filter(
         OrderDB.restaurant_id == restaurant_id,
@@ -912,10 +914,10 @@ async def get_tables(restaurant_id: int, db: Session = Depends(get_db)):
     return [{"id": t.id, "number": t.number, "label": t.label} for t in tables]
 
 
-@app.get("/admin/qr-tables", response_class=HTMLResponse)
+@app.get("/admin/qr-tables")
 async def qr_tables_page(request: Request, db: Session = Depends(get_db)):
     restaurant = db.query(RestaurantDB).filter(RestaurantDB.id == 1).first()
-    tables = db.query(TableDB).filter(TableDB.restaurant_id == restaurant.id).order_by(TableDB.number).all()
+    tables = db.query(TableDB).filter(TableDB.restaurant_id == 1).order_by(TableDB.number).all()
     return templates.TemplateResponse(
         request=request,
         name="admin/qr_tables.html",
@@ -925,10 +927,6 @@ async def qr_tables_page(request: Request, db: Session = Depends(get_db)):
 
 @app.get("/admin/qr/{restaurant_id}/{table_id}")
 async def generate_qr(restaurant_id: int, table_id: int):
-    import qrcode
-    import io
-    from fastapi.responses import StreamingResponse
-
     url = f"{QR_BASE_URL}/menu/{restaurant_id}/{table_id}"
 
     img = qrcode.make(url)
@@ -959,6 +957,4 @@ async def generate_qr(restaurant_id: int, table_id: int):
 
 
 if __name__ == "__main__":
-    import uvicorn
-
     uvicorn.run(app, host="0.0.0.0", port=8000)
