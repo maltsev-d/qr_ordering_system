@@ -8,3 +8,4 @@ python-dotenv==1.2.3
 httpx==0.28.1
 qrcode[pil]==8.2
 psycopg2-binary==2.9.12
+pytz==2026.4

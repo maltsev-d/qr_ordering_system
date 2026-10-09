@@ -291,10 +291,25 @@
 <nav class="nav">
     <div class="nav-brand">🐘 Sabaidee</div>
     <div class="nav-tabs">
-        <a href="/admin/dashboard" class="nav-tab"><span class="lo">ໜ້າຫຼັກ</span><span class="en">Dashboard</span></a>
-        <a href="/admin/analytics" class="nav-tab"><span class="lo">ສະຖິຕິ</span><span class="en">Analytics</span></a>
-        <a href="/admin/menu" class="nav-tab active"><span class="lo">ເມນູ</span><span class="en">Menu</span></a>
-        <a href="/admin/qr-tables" class="nav-tab"><span class="lo">QR ໂຕະ</span><span class="en">QR Tables</span></a>
+        <a href="/admin/dashboard" class="nav-tab active">
+            <span class="lo">ໜ້າຫຼັກ</span>
+            <span class="en">Dashboard</span>
+        </a>
+        <a href="/admin/analytics" class="nav-tab">
+            <span class="lo">ສະຖິຕິ</span>
+            <span class="en">Analytics</span>
+        </a>
+        <a href="/admin/menu" class="nav-tab">
+            <span class="lo">ເມນູ</span>
+            <span class="en">Menu</span>
+        </a>
+<!--        <a href="/admin/happy-hour" class="nav-tab">-->
+<!--            <span class="lo">ສ່ວນລົດ</span><span class="en">Happy Hour</span>-->
+<!--        </a>-->
+        <a href="/admin/qr-tables" class="nav-tab">
+            <span class="lo">QR ໂຕະ</span>
+            <span class="en">QR Tables</span>
+        </a>
     </div>
 </nav>
 
@@ -985,18 +1000,21 @@
     }
 
     function renderOptions() {
-        document.getElementById('gf-options').innerHTML = _options.map((o, i) => `
-            <div class="opt-row">
-                <input placeholder="😊" style="width:48px;text-align:center" value="${esc(o.emoji)}"
-                       onchange="updateOption(${i},'emoji',this.value)">
-                <input placeholder="Label (EN)" style="flex:1" value="${esc(o.labels.en)}"
-                       onchange="updateOptionLabel(${i},'en',this.value)">
-                <input placeholder="+₭" type="number" min="0" style="width:72px" value="${o.price_add}"
-                       onchange="updateOption(${i},'price_add',+this.value)">
-                <button class="opt-del" onclick="removeOption(${i})" title="Remove">✕</button>
-            </div>
-        `).join('');
-    }
+    document.getElementById('gf-options').innerHTML = _options.map((o, i) => `
+        <div class="opt-row">
+            <input placeholder="😊" style="width:48px;text-align:center"
+                   value="${esc(o.emoji)}"
+                   oninput="updateOption(${i},'emoji',this.value)">
+            <input placeholder="Label (EN)" style="flex:1"
+                   value="${esc(o.labels.en)}"
+                   oninput="updateOptionLabel(${i},'en',this.value)">
+            <input placeholder="+₭" type="number" min="0" style="width:72px"
+                   value="${o.price_add}"
+                   oninput="updateOption(${i},'price_add',+this.value)">
+            <button class="opt-del" onclick="removeOption(${i})" title="Remove">✕</button>
+        </div>
+    `).join('');
+}
 
     function updateOption(idx, field, val) { _options[idx][field] = val; }
     function updateOptionLabel(idx, lang, val) { _options[idx].labels[lang] = val; }
